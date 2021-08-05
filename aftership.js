@@ -42,7 +42,7 @@ function af_singleTracking (tracking_number, courier) {
  * @param tracking_numbers 数组
  */
 function af_batchTracking (tracking_numbers) {
-  tracking_numbers = ['9361289738009091755413', '9374889675091115019951']
+  tracking_numbers =  tracking_numbers ? tracking_numbers : ['9361289738009091755413', '9374889675091115019951']
   let url = `${AF_HOST_V2}/direct-trackings/batch`
   console.log(url)
   let direct_trackings = []

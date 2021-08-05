@@ -1,6 +1,5 @@
 // 默认的参数
 const PREFIX = 'ADDON_TRACK' // 标记符号，若用统一的用户管理后台，那么可以用此字符进行区分
-const TN = 'UM740335899US' // 临时的订单号
 const APP_NAME = 'Track-Multiple-Packages-Addon' // Track-Multiple-Packages (Google Sheets Addon)
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
 const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
@@ -29,3 +28,8 @@ if(!userProperties.getProperty('setting')){
 
 // getwebooster@gmail.com 用户的个人页面
 // https://trackr.workaddons.com/subscribe/722b0c722539340c726a0c72653d3d0422003114371f0c727c0c72353d31393c0c726a0c723735242735323f3f2324352210373d31393c7e333f3d0c727c0c723120200c726a0c72042231333b227d1134343f3e0c727c0c72203c313e0c726a0c723d3f3e24383c290c722d72
+
+// 9361289738009091755413
+// UA938472260US
+// 9374889675091115019951
+// UM740335899US

@@ -6,16 +6,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Track Multiple Packages</title>
-    <link
-      rel="stylesheet"
-      href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-      integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
-      crossorigin="anonymous"
-    />
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous"/>
     <style>
       html{
         margin: 0;
@@ -105,11 +97,14 @@
       <div v-if="page==='home'">
         <div class="form-group" style="margin-top: 10px;">
           <!-- <label for="sampleTextArea">Enter </label> -->
-          <textarea style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line."></textarea>
+          <textarea v-model="nums" style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
           <label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
           <p>
-            <button style="width: 100%" class="action">
+            <button v-if="!isLoading" @click="track" style="width: 100%" class="action">
               <i class="fas fa-search"></i>Track
+            </button>
+            <button v-if="isLoading" style="width: 100%" class="action" disabled>
+              <i class="fas fa-spin fa-spinner"></i>Track
             </button>
           </p>
           <p>
@@ -189,23 +184,45 @@
       data: {
         isLoading: false,
         page: 'home',
-        logs: ''
+        logs: '',
+        nums: ''
       },
       created() {
-        // serverRun('getColumns', {},  this.getColumns, null)
+        let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
+        this.nums = test
+        let arr = test.split(String.fromCharCode(10))
+        for (let i = 0; i < arr.length; i++) {
+          let element = arr[i]
+          arr[i] = element.trim()
+        }
+        // console.log(arr)
+        // this.track(arr)
       },
       methods: {
         gotoPage (page) {
           this.page = page
         },
 
-        track () {
-          serverRun('doTrack', {}, function(result){
+        track (trackings) {
+          let _this = this
+          let arr = this.nums.split(String.fromCharCode(10))
+          let tks = []
+          for (let i = 0; i < arr.length; i++) {
+            let element = arr[i]
+            arr[i] = element.trim()
+            if(arr[i].length > 3) {
+              tks.push(arr[i])
+            }
+          }
+          this.isLoading = true
+          serverRun('doTrack', tks, function(result){
             console.log(result)
-            this.logs = result
+            // _this.logs = result
+            _this.isLoading = false
           }, function(err) {
             console.log(err)
-            this.logs = result
+            // _this.logs = result
+            _this.isLoading = false
           })
         }
       },
