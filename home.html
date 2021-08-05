@@ -41,7 +41,9 @@
           transform: rotate(360deg);
         }
       }
-
+      button {
+        cursor: pointer;
+      }
       .center {
         position: absolute;
         top: 0;
@@ -118,9 +120,11 @@
       </div>
       <!-- faqs -->
       <div v-if="page==='faqs'">
-        <h4>
+        <p>
+          <b>
           <i class="fas fa-question-circle"></i>
-          FAQs and Troubleshooting</h4>
+          FAQs and Troubleshooting</b>
+        </p>
         <p>
           Got a question? Something doesn’t work? Most likely you are not alone and your question got an answer at our evergrowing FAQs page.
           <br>
@@ -132,12 +136,25 @@
         <p>
           Do you have an idea for making <u>Track Multiple Packages</u> better? We'd love to hear about it!
           <br>
-          <label for="">getworkaddons@gmail.com</label>
+          <i class="fas fa-envelope"></i>
+          <span style="color: #3b84f2">getworkaddons@gmail.com</span>
         </p>
       </div>
       <!-- pro -->
       <div v-if="page==='pro'">
 
+        <div>
+          <p>
+            <input type="checkbox" id="terms">
+            <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+          </p>
+          <p style="text-align: left;" class="secondary">
+            <i class="fas fa-lock"></i>
+            We use <strong>Stripe</strong> to process purchases and do not know your card details.</p>
+          <p style="text-align: center;">
+            <img style="width: 98%; height: auto;" src="https://i.ibb.co/pJCDvHY/secure-stripe-payment.jpg" alt="" srcset="">
+          </p>
+        </div>
       </div>
       <!-- footer -->
       <div style="text-align: center; margin-top: 20px;">
