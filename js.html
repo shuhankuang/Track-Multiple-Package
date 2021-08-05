@@ -1,0 +1,53 @@
+<script> 
+  document.onreadystatechange = function() { 
+      if (document.readyState !== "complete") { 
+          document.querySelector( 
+            "body").style.visibility = "hidden"; 
+          document.querySelector( 
+            "#loader").style.visibility = "visible"; 
+      } else { 
+          document.querySelector( 
+            "#loader").style.display = "none"; 
+          document.querySelector( 
+            "body").style.visibility = "visible"; 
+      } 
+  }; 
+</script> 
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script>
+  function serverRun(func, params, onSuccess, onFailure) {
+    google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(onFailure)
+      [func](params)
+  }
+  var app = new Vue({
+    el: '#app',
+    data: {
+      isLoading: false,
+      columns: undefined,
+      valColumn: -1,
+      imgColumn: -1,
+    },
+    created() {
+      // serverRun('getColumns', {},  this.getColumns, null)
+    },
+    methods: {
+      generateQRCode: function() {
+        this.isLoading = true
+        var _this = this
+        var params = {
+          valColumn: this.columns[this.valColumn],
+          imgColumn: this.columns[this.imgColumn],
+        }
+        serverRun('generateQRCodes', params, function(){
+          _this.isLoading = false
+        })
+      },
+
+      getColumns: function(result) {
+        this.columns = result
+      }
+    },
+  })
+</script>

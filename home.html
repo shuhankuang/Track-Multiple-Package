@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track Multiple Packages</title>
+    <link
+      rel="stylesheet"
+      href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
+      crossorigin="anonymous"
+    />
+    <style>
+      html{
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 280px;
+        margin:0;
+        padding: 0 10px;
+        color: #1d1e20 !important;
+      }
+      #loader {
+        border: 12px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 12px solid #444444;
+        width: 70px;
+        height: 70px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .center {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+      }
+      select {
+        width: 200px;
+      }
+      option {
+        width: 200px;
+      }
+      hr {
+        border-top: 1px dashed #eff1f2;
+        border-bottom: none;
+        margin: 4px 0px;
+      }
+      ul {
+        list-style: none;
+        padding-inline-start: 0;
+      }
+      ul > li {
+        display: inline;
+        padding: 4px;
+        cursor: pointer;
+      }
+      li:hover {
+        color: #3982ed
+      }
+      li.active {
+        color: #3982ed;
+        font-weight: bold;
+      }
+      p {
+        color: #2e2f31 !important
+      }
+      .fas {
+        margin-right: 5px;
+      }
+    </style>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="loader" class="center"></div>
+    <div id="app">
+      <!-- nav -->
+      <div>
+        <ul style="text-align: right;">
+          <li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
+          <li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}"><i class="fas fa-question-circle"></i></li>
+          <li @click="gotoPage('setting')" :class="{'active': page==='setting'}"><i class="fas fa-cog"></i></li>
+          <li @click="gotoPage('pro')" :class="{'active': page==='pro'}"><i class="fas fa-gem"></i>PRO</li>
+        </ul>
+        <hr>
+      </div>
+      <!-- home -->
+      <div v-if="page==='home'">
+        <div class="form-group" style="margin-top: 10px;">
+          <!-- <label for="sampleTextArea">Enter </label> -->
+          <textarea style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line."></textarea>
+          <label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
+          <p>
+            <button style="width: 100%" class="action">
+              <i class="fas fa-search"></i>Track
+            </button>
+          </p>
+        </div>
+      </div>
+      <!-- setting -->
+      <div v-if="page==='setting'">
+
+      </div>
+      <!-- faqs -->
+      <div v-if="page==='faqs'">
+        <h4>
+          <i class="fas fa-question-circle"></i>
+          FAQs and Troubleshooting</h4>
+        <p>
+          Got a question? Something doesn’t work? Most likely you are not alone and your question got an answer at our evergrowing FAQs page.
+          <br>
+          <br>
+          <button style="width: 100%;">FAQs PAGE</button>
+          <br>
+        </p>
+        <hr>
+        <p>
+          Do you have an idea for making <u>Track Multiple Packages</u> better? We'd love to hear about it!
+          <br>
+          <label for="">getworkaddons@gmail.com</label>
+        </p>
+      </div>
+      <!-- pro -->
+      <div v-if="page==='pro'">
+
+      </div>
+      <!-- footer -->
+      <div style="text-align: center; margin-top: 20px;">
+        <p style="color: grey;">&copy; 2021 WorkAddons.</p>
+      </div>
+    </div>
+  </body>
+  <script>
+    document.onreadystatechange = function () {
+      if (document.readyState !== "complete") {
+        document.querySelector("body").style.visibility = "hidden";
+        document.querySelector("#loader").style.visibility = "visible";
+      } else {
+        document.querySelector("#loader").style.display = "none";
+        document.querySelector("body").style.visibility = "visible";
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script>
+    function serverRun(func, params, onSuccess, onFailure) {
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        [func](params);
+    }
+    var app = new Vue({
+      el: "#app",
+      data: {
+        isLoading: false,
+        page: 'home'
+      },
+      created() {
+        // serverRun('getColumns', {},  this.getColumns, null)
+      },
+      methods: {
+        gotoPage (page) {
+          this.page = page
+        }
+      },
+    });
+  </script>
+</html>
