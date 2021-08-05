@@ -1,6 +1,7 @@
 const AF_HOST = 'https://track.aftership.com/api'
+const AF_HOST_V2 = 'https://track.aftership.com/api/v2'
+
 function af_detectCouriers (tracking_number) {
-  // tracking_number = '9374889675091115019951'
   let url =  `${AF_HOST}/courier-detect/${tracking_number}`
   console.log(url)
   let opts = {
@@ -18,13 +19,43 @@ function af_detectCouriers (tracking_number) {
 }
 
 function af_singleTracking (tracking_number, courier) {
-  // tracking_number = '9374889675091115019951'
-  // courier = 'usps'
   let url =  `${AF_HOST}/direct-tracking?lang=en`
   console.log(url)
   let formData = {
     courier,
     trackingNumbers: tracking_number
+  }
+  let opts = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(formData)
+  }
+  // console.log(opts)
+  let response = UrlFetchApp.fetch(url, opts)
+  let json = JSON.parse(response.getContentText())
+  // console.log(json)
+  return json
+}
+
+/**
+ * 批量获取数据
+ * @param tracking_numbers 数组
+ */
+function af_batchTracking (tracking_numbers) {
+  tracking_numbers = ['9361289738009091755413', '9374889675091115019951']
+  let url = `${AF_HOST_V2}/direct-trackings/batch`
+  console.log(url)
+  let direct_trackings = []
+  for(let i = 0; i < tracking_numbers.length; i++) {
+    let num = tracking_numbers[i]
+    direct_trackings.push({
+      additional_fields: {},
+      tracking_number: num
+    })
+  }
+  let formData = {
+    slugs: [],
+    direct_trackings,
   }
   let opts = {
     method: 'post',
@@ -37,8 +68,12 @@ function af_singleTracking (tracking_number, courier) {
   // console.log(opts)
   let response = UrlFetchApp.fetch(url, opts)
   let json = JSON.parse(response.getContentText())
-  // console.log(json)
+  console.log(json)
   return json
+}
+
+function af_parseBatchToHTML () {
+
 }
 
 function af_parseToHTML (response) {

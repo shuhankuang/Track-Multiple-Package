@@ -1,24 +1,21 @@
 // 默认的参数
-const PREFIX = 'ADDON_TRACK_' // 标记符号，若用统一的用户管理后台，那么可以用此字符进行区分
+const PREFIX = 'ADDON_TRACK' // 标记符号，若用统一的用户管理后台，那么可以用此字符进行区分
 const TN = 'UM740335899US' // 临时的订单号
-const APP_NAME = 'Trackr-Addon' // Trackr - Track a Package (Google Workspace)
+const APP_NAME = 'Track-Multiple-Packages-Addon' // Track-Multiple-Packages (Google Sheets Addon)
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
-const MAX_HISTORY_NUM = 3
-const MAX_PER_MONTH = 30
+const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
+const MAX_PER_MONTH = 30 // 免费用户每月可以查询多少条
 
-// 默认的 HomeCard 设置
+// 默认的用户参数
 var default_params = {
   tracking_number: '', // 物流订单号
   couriers: [
     {text: '', value: 0}
   ], // 物流服务商
-  reset_btn_disabled: false, // 重设按钮
-  tracking_btn_disabled: true, // 追踪按钮
   tracking_response: undefined,
   tracking_info: ' ', // 物流信息 (拼接的)
-  isHomePage: false // 是否首页
 }
-// 默认 SettingCard 设置
+// 默认 setting 设置
 let default_setting = {
   num_select: 0, // 插入多少条物流信息
   show_hisotry: true, // 显示单号历史

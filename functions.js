@@ -25,3 +25,9 @@ function openHelp() {
   var ui = SpreadsheetApp.getUi()
   ui.showModalDialog(output, 'Help - Track Multiple Packages')
 }
+
+function doTrack (tracking_numbers) {
+  let result = af_batchTracking()
+  console.log(JSON.stringify(result))
+  return result
+}
