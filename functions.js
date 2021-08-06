@@ -124,6 +124,26 @@ function doGetMe () {
   return me
 }
 
+/**
+ * 弹出 alert 窗口
+ */
+function showAlert (params) {
+  var ui = SpreadsheetApp.getUi()
+  var result = ui.alert(
+     params.title,
+     params.message,
+     ui.ButtonSet.OK)
+
+  // Process the user's response.
+  if (result == ui.Button.YES) {
+    // User clicked "Yes".
+    // ui.alert('Confirmation received.');
+  } else {
+    // User clicked "No" or X in the title bar.
+    // ui.alert('Permission denied.');
+  }
+}
+
 
 
 

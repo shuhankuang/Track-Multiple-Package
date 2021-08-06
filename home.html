@@ -166,11 +166,17 @@
                 <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
               </p>
               <p>
-                <input type="checkbox" id="terms">
+                <input v-model="accept" type="checkbox" id="terms">
                 <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
               </p>
             </p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente numquam ipsam minus minima fugiat saepe veritatis repellat praesentium consequatur rem, autem explicabo labore voluptatem voluptatum, magnam ipsa cupiditate voluptates omnis.
+            <hr>
+            <p>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b>500</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+            </p>
           </div>
           <div class="box">
             <b>Basic</b>
@@ -180,7 +186,13 @@
               <span style="font-size: 20px;" class="error"><b>$0</b></span>
               <span class="grey">/ Monthly</span>
             </p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente numquam ipsam minus minima fugiat saepe veritatis repellat praesentium consequatur rem.
+            <hr>
+            <p>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b>30</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+            </p>
           </div>
           <p style="text-align: left;" class="secondary">
             <i class="fas fa-lock"></i>
@@ -223,6 +235,7 @@
         logs: '',
         nums: '',
         me: undefined,
+        accept: false,
       },
       created() {
         let _this = this
@@ -240,8 +253,22 @@
 
         gotoSubscribePage () {
           console.log(this.me)
+          if(!this.accept) {
+            this.showAlert()
+            return
+          }
           let url = this.me.subscribeURL
           window.open(url)
+        },
+
+        showAlert () {
+          let data = {
+            title: 'SheetTrackr',
+            message: 'You need to accept the SheetTrackr Terms of Service.'
+          }
+          serverRun('showAlert', data, function(result) {
+
+          })
         },
 
         track (trackings) {
