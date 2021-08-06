@@ -1,31 +1,33 @@
 /**
  * @OnlyCurrentDoc
  */
-function openDialog() {
-  var filename = 'home'
-  // var output = HtmlService.createTemplateFromFile(filename).evaluate()
-  //   .setHeight(350)
-  //   .setWidth(520)
-  // console.log(output)
+/**
+ * 打开侧栏的操作界面
+ */
+function openSidebar() {
+  User.init()
   // 
+  var filename = 'home'
   var output = HtmlService.createHtmlOutputFromFile(filename)
-                          .setTitle('Track Multiple Packages')
+                          .setTitle('SheetTrackr - Track Multiple Packages')
   var ui = SpreadsheetApp.getUi()
-  // ui.showModalDialog(output, 'Track Multiple Packages')
   ui.showSidebar(output)
 }
-
+/**
+ * 打开帮助窗口
+ */
 function openHelp() {
   console.log('Open Help...!')
   var filename = 'help'
-  // var output = HtmlService.createTemplateFromFile(filename).evaluate()
   var output = HtmlService.createHtmlOutputFromFile(filename)
                           .setHeight(385)
                           .setWidth(560)
   var ui = SpreadsheetApp.getUi()
-  ui.showModalDialog(output, 'Help - Track Multiple Packages')
+  ui.showModalDialog(output, 'Help - SheetTrackr')
 }
-
+/**
+ * 查询订单
+ */
 function doTrack (tracking_numbers) {
   console.log(tracking_numbers)
   let result = af_batchTracking(tracking_numbers)
@@ -33,7 +35,9 @@ function doTrack (tracking_numbers) {
   insertTrackingsToSheet(result)
   return result
 }
-
+/**
+ * 将物流内容插入的表单里
+ */
 function insertTrackingsToSheet (json) {
   let data = json.data
   // data = af_data
@@ -95,9 +99,27 @@ function insterTextToSheet (row, column, text) {
   }
 }
 
-
+/**
+ * 获取当前用户
+ */
 function doGetMe () {
-  let me = User.email()
+  // let me = User.email()
+  // console.log(me)
+  let me = {}
+  let user = userProperties.getProperty('user')
+  let exUser = userProperties.getProperty('exUser')
+  me.user = JSON.parse(user)
+  me.email = User.email()
+  me.exUser = JSON.parse(exUser)
+
+  // 
+  let token_obj = {
+    uid: user.objectId,
+    email: me.email,
+    app: APP_NAME,
+  }
+  let token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  me.subscribeURL = `${ADDON_HOST}/subscribe/${token}`
   console.log(me)
   return me
 }

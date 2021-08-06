@@ -1,12 +1,12 @@
-const ADDON_HOST = `https://trackr.workaddons.com`
-// const ADDON_HOST = `https://8afec8cc4a45.ngrok.io`
+// const ADDON_HOST = `https://trackr.workaddons.com`
+const ADDON_HOST = `https://8460b52088dd.ngrok.io`
 // parse server
 // 参考：http://docs.parseplatform.org/rest/guide/#getting-started
 class Klass_ParseServer {
   constructor () {
     this.host = ADDON_HOST
     this.headers = {
-      'X-Parse-Application-Id': 'huawvdrdlruobltrewugrnsejiftchrwlaznmzrsqmlvkjdux',
+      'X-Parse-Application-Id': 'huawvdrdlruobltrewugrnsejiftchrwlaznmzrsqmlvkjduxb',
       // 'Content-Type': 'application/json',
     }
   }
