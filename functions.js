@@ -96,6 +96,12 @@ function insterTextToSheet (row, column, text) {
 }
 
 
+function doGetMe () {
+  let me = User.email()
+  console.log(me)
+  return me
+}
+
 
 
 

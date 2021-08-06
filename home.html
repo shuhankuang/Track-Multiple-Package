@@ -77,6 +77,12 @@
       .fas {
         margin-right: 5px;
       }
+      .box {
+        padding: 15px;
+        border: 1px solid #f6f6f6;
+        border-radius: 3px;
+        margin-top: 10px;
+      }
     </style>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
   </head>
@@ -114,7 +120,11 @@
       </div>
       <!-- setting -->
       <div v-if="page==='setting'">
-
+        <p>
+          <i class="fas fa-user"></i>
+          {{me}}
+        </p>
+        <hr>
       </div>
       <!-- faqs -->
       <div v-if="page==='faqs'">
@@ -140,12 +150,38 @@
       </div>
       <!-- pro -->
       <div v-if="page==='pro'">
-
         <div>
-          <p>
-            <input type="checkbox" id="terms">
-            <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
-          </p>
+          <div class="box" style="background-color: #f7f8f9;">
+            <b>Professional</b>
+            <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+              <i class="fas fa-fire-alt"></i>
+              POPULAR</b></span>
+            <p>
+              <span style="font-size: 20px;" class="error"><b>$9.99</b></span>
+              <span class="grey">/ Monthly</span>
+            </p>
+            <p>
+              <p style="text-align: center;">
+                <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span>
+                <button class="create" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+              </p>
+              <p>
+                <input type="checkbox" id="terms">
+                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+              </p>
+            </p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente numquam ipsam minus minima fugiat saepe veritatis repellat praesentium consequatur rem, autem explicabo labore voluptatem voluptatum, magnam ipsa cupiditate voluptates omnis.
+          </div>
+          <div class="box">
+            <b>Basic</b>
+            <span style="padding: 2px 6px;float: right; font-size: 10px; background: #f3f3f3; border-radius: 2px;"><b style="color: #353535">
+              FREE</b></span>
+            <p>
+              <span style="font-size: 20px;" class="error"><b>$0</b></span>
+              <span class="grey">/ Monthly</span>
+            </p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente numquam ipsam minus minima fugiat saepe veritatis repellat praesentium consequatur rem.
+          </div>
           <p style="text-align: left;" class="secondary">
             <i class="fas fa-lock"></i>
             We use <strong>Stripe</strong> to process purchases and do not know your card details.</p>
@@ -183,20 +219,18 @@
       el: "#app",
       data: {
         isLoading: false,
-        page: 'home',
+        page: 'pro',
         logs: '',
-        nums: ''
+        nums: '',
+        me: undefined,
       },
       created() {
+        let _this = this
         let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
         this.nums = test
-        let arr = test.split(String.fromCharCode(10))
-        for (let i = 0; i < arr.length; i++) {
-          let element = arr[i]
-          arr[i] = element.trim()
-        }
-        // console.log(arr)
-        // this.track(arr)
+        serverRun('doGetMe', {}, function(result){
+          _this.me = result
+        }, function(){})
       },
       methods: {
         gotoPage (page) {
