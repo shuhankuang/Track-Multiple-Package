@@ -105,12 +105,12 @@
     <div id="app">
       <!-- nav -->
       <div>
-        <span style="float: left;"><span class="pro-plan">BASIC PLAN</span></span>
+        <span v-if="status" style="float: left;"><span class="pro-plan">BASIC : <span class="error">{{status.new_remaining || status.remaining}}</span> / {{status.max}}</span></span>
         <ul style="text-align: right;">
           <li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
           <li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}"><i class="fas fa-question-circle"></i></li>
           <li @click="gotoPage('setting')" :class="{'active': page==='setting'}"><i class="fas fa-cog"></i></li>
-          <li @click="gotoPage('pro')" :class="{'active': page==='pro'}"><i class="fas fa-gem"></i>PRO</li>
+          <li @click="gotoPage('pro')" :class="{'active': page==='pro'}"><i class="fas fa-gem"></i></li>
         </ul>
         <hr>
       </div>
@@ -178,7 +178,7 @@
             <p>
               <p style="text-align: center;">
                 <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+                <button @click="gotoSubscribePage('standard')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
               </p>
               <p>
                 <input v-model="accept" type="checkbox" id="terms">
@@ -206,7 +206,7 @@
             <p>
               <p style="text-align: center;">
                 <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+                <button @click="gotoSubscribePage('professional')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
               </p>
               <p>
                 <input v-model="accept" type="checkbox" id="terms">
@@ -234,7 +234,7 @@
             <p>
               <p style="text-align: center;">
                 <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+                <button @click="gotoSubscribePage('business')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
               </p>
               <p>
                 <input v-model="accept" type="checkbox" id="terms">
@@ -260,7 +260,7 @@
             </p>
             <hr>
             <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b>30</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">30</b> tracking numbers per month</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
@@ -308,14 +308,17 @@
         nums: '',
         me: undefined,
         accept: false,
+        status: undefined,
       },
       created() {
         let _this = this
-        let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
+        // let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
+        let test = '9405511108400894874262'
         this.nums = test
         serverRun('doGetMe', {}, function(result){
-          console.log(result)
           _this.me = result
+          _this.status = result.status
+          console.log(result)
         }, function(){})
       },
       methods: {
@@ -323,13 +326,12 @@
           this.page = page
         },
 
-        gotoSubscribePage () {
-          console.log(this.me)
+        gotoSubscribePage (plan) {
           if(!this.accept) {
             this.showAlert()
             return
           }
-          let url = this.me.subscribeURL
+          let url = this.me.subscribeURL + `&plan=${plan}`
           window.open(url)
         },
 
@@ -357,7 +359,10 @@
           this.isLoading = true
           serverRun('doTrack', tks, function(result){
             console.log(result)
-            // _this.logs = result
+            let filter_result = result
+            let status = filter_result.status
+            _this.status = status
+            console.log(status)
             _this.isLoading = false
           }, function(err) {
             console.log(err)

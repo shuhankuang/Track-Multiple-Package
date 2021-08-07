@@ -29,17 +29,41 @@ function openHelp() {
  * 查询订单
  */
 function doTrack (tracking_numbers) {
-  console.log(tracking_numbers)
-  let result = af_batchTracking(tracking_numbers)
-  insertTrackingsToSheet(result)
+  // console.log(tracking_numbers)
+  // tracking_numbers = ['9361289738009091755413', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262']
+  // 过滤订单，排除重复的
+  let filter_result = filterTrackingNumbers(tracking_numbers)
+  console.log(filter_result.result)
+  // 获得新的订单号
+  let new_trackings = filter_result.result.new_trackings
+  // 记录新的订单号
+  let insert_result = insertNewTrackingNumberToUser(new_trackings)
+  // console.log(insert_result)
+  // 本次需要搜索的单号
+  let search_trackikng_numbers = filter_result.result.search_trackings
+  // console.log(search_trackikng_numbers)
+  // 搜索物流信息
+  let trackings_result = af_batchTracking(search_trackikng_numbers)
+  // 将信息插入到 sheet 中
+  insertTrackingsToSheet(trackings_result)
+  return filter_result.result
+}
+
+function filterTrackingNumbers (tracking_numbers) {
+  let data = {
+    tracking_numbers,
+  }
+  let result = ParseServer.runCloudCode('fiterTrackingNumbers', data)
   return result
 }
 
 /**
  * 更新用户的查询记录，进行业务逻辑的判断
  */
-function updateUserTrackings (tracking_numbers) {
-  tracking_numbers = ['9361289738009091755413', 'UA938472260US', '9374889675091115019951', 'UM740335899US']
+function insertNewTrackingNumberToUser (tracking_numbers) {
+  if(tracking_numbers.length < 1) {
+    return false
+  }
   let me = User.me()
   let uid = me.objectId
   let objs = []
@@ -57,25 +81,9 @@ function updateUserTrackings (tracking_numbers) {
     })
   })
   // console.log(objs)
-  // 保存所有的单号（如果重复就不计算）
+  // 保存新的单号
   let result = ParseServer.batch(objs)
-  // console.log(result)
-  let dup_nums = []
-  let new_nums = []
-  result.map((obj) => {
-    // console.log(obj)
-    if(obj.error) {
-      let tracking_num = obj.error.error.split(',')[0]
-      dup_nums.push(tracking_num)
-    }
-    if(obj.success) {
-      let objId = obj.success.objectId
-      new_nums.push(objId)
-    }
-  })
-
-  console.log(dup_nums)
-  console.log(new_nums)
+  return result
 }
 
 /**
@@ -162,14 +170,32 @@ function doGetMe () {
   me.user = JSON.parse(user)
   me.email = User.email()
   me.exUser = JSON.parse(exUser)
+  let status = ParseServer.runCloudCode('fetchUserStatus', {})
+  // me.exUser.pro = true
+  me.status = status.result
   let token_obj = {
-    uid: user.objectId,
+    uid: me.user.objectId,
     email: me.email,
     app: APP_NAME,
+    v: VERSION,
   }
   let token = cipher(APP_NAME)(JSON.stringify(token_obj))
-  me.subscribeURL = `${ADDON_HOST}/subscribe/${token}`
-  console.log(me)
+  // Object.assign(token_obj, {plan: 'standard'})
+  // // console.log(token_obj)
+  // let standard_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // Object.assign(token_obj, {plan: 'professional'})
+  // // console.log(token_obj)
+  // let professional_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // Object.assign(token_obj, {plan: 'business'})
+  // let business_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // console.log(token_obj)
+  me.subscribeURL = `${ADDON_HOST}/stripe/redirect?token=${token}`
+  me.version = VERSION
+  // me.subscribeURLs = {
+  //   standard: `${ADDON_HOST}/stripe/redirect/${standard_token}`,
+  //   professional: `${ADDON_HOST}/stripe/redirect/${professional_token}`,
+  //   business: `${ADDON_HOST}/stripe/redirect/${business_token}`,
+  // }
   return me
 }
 
