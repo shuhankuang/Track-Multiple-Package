@@ -3,7 +3,8 @@ const PREFIX = 'ADDON_TRACK' // 标记符号，若用统一的用户管理后台
 const APP_NAME = 'Track-Multiple-Packages-Addon' // Track-Multiple-Packages (Google Sheets Addon)
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
 const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
-const MAX_PER_MONTH = 30 // 免费用户每月可以查询多少条
+const MAX_PER_MONTH = 30 // 免费用户每月可以查询 30 条
+const MAX_PER_MONTH_PRO = 500 // 专业用户每月可以查询 500 条
 
 // 默认的用户参数
 var default_params = {
@@ -33,3 +34,4 @@ if(!userProperties.getProperty('setting')){
 // UA938472260US
 // 9374889675091115019951
 // UM740335899US
+// 9405511108435891385343

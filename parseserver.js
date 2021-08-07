@@ -48,15 +48,21 @@ class Klass_ParseServer {
   // 参考：http://docs.parseplatform.org/rest/guide/#queries
   query (klass, q) {
     let queryString = Object.keys(q).map(key => key + '=' + q[key]).join('&')
+    console.log(queryString)
     let url = `${this.host}/parse/classes/${klass}?${queryString}`
     let result = this.ajax(url, q, 'get', this.headers, 'query')
     return result
   }
 
   // 参考： http://docs.parseplatform.org/rest/guide/#batch-operations
-  // 没实现
-  batch () {
-
+  // 批量实现
+  batch (objects) {
+    let url = `${ADDON_HOST}/parse/batch`
+    let data = {
+      requests: objects
+    }
+    let result = this.ajax(url, data, 'post', this.headers, 'batch')
+    return result
   }
   
   count (klass, q) {
@@ -95,7 +101,7 @@ class Klass_ParseServer {
       }else{
         obj = undefined
       }
-      if(method === 'get' || method === 'put' || command === 'runCloudCode') {
+      if(method === 'get' || method === 'put' || command === 'runCloudCode' || command === 'query') {
         data.ACL = undefined
         delete data.ACL
       }
@@ -108,6 +114,7 @@ class Klass_ParseServer {
       headers: headers,
       muteHttpExceptions: true,
     }
+
     // 处理多余的数据
     if(command === 'get' || command === 'count'|| command === 'query') {
       opts.payload = undefined
@@ -139,7 +146,14 @@ class Klass_ParseServer {
 const ParseServer = new Klass_ParseServer()
 // test functions
 function parseserver_test_query () {
-  let result = ParseServer.query('GameScore', {
+  let me = User.me()
+  let user = ParseServer.pointer('User', 'oSRyMFTlFu')
+  let where = {
+    tracking_num: '9361289738009091755413'
+  }
+  let result = ParseServer.query('Tracking', {
+    where: JSON.stringify(where),
+    include: `'user'`,
     limit: 2
   })
   console.log(result)

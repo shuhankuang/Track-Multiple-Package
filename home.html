@@ -83,6 +83,20 @@
         border-radius: 3px;
         margin-top: 10px;
       }
+      .free-plan {
+        padding: 2px 6px;
+        font-size: 10px;
+        background: #f3f3f3;
+        border-radius: 2px;
+        font-weight: bold;
+      }
+      .pro-plan {
+        padding: 2px 6px;
+        font-size: 10px;
+        background: #ffe08a;
+        border-radius: 2px;
+        font-weight: bold;
+      }
     </style>
     <script src="https://unpkg.com/vue/dist/vue.js"></script>
   </head>
@@ -91,6 +105,7 @@
     <div id="app">
       <!-- nav -->
       <div>
+        <span style="float: left;"><span class="pro-plan">BASIC PLAN</span></span>
         <ul style="text-align: right;">
           <li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
           <li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}"><i class="fas fa-question-circle"></i></li>
@@ -102,7 +117,6 @@
       <!-- home -->
       <div v-if="page==='home'">
         <div class="form-group" style="margin-top: 10px;">
-          <!-- <label for="sampleTextArea">Enter </label> -->
           <textarea v-model="nums" style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
           <label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
           <p>
@@ -151,6 +165,35 @@
       <!-- pro -->
       <div v-if="page==='pro'">
         <div>
+          <!-- standard -->
+          <div class="box">
+            <b>Standard</b>
+            <!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+              <i class="fas fa-fire-alt"></i>
+              POPULAR</b></span> -->
+            <p>
+              <span style="font-size: 20px;" class="error"><b>$6.99</b></span>
+              <span class="grey">/ Monthly</span>
+            </p>
+            <p>
+              <p style="text-align: center;">
+                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
+                <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+              </p>
+              <p>
+                <input v-model="accept" type="checkbox" id="terms">
+                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+              </p>
+            </p>
+            <hr>
+            <p>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">250</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+            </p>
+          </div>
+          <!-- pro -->
           <div class="box">
             <b>Professional</b>
             <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
@@ -162,7 +205,7 @@
             </p>
             <p>
               <p style="text-align: center;">
-                <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span>
+                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
                 <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
               </p>
               <p>
@@ -172,12 +215,41 @@
             </p>
             <hr>
             <p>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">500</b> tracking numbers per month</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b>500</b> tracking numbers per month</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
             </p>
           </div>
+          <!-- business -->
+          <div class="box">
+            <b>Business</b>
+            <!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+              <i class="fas fa-fire-alt"></i>
+              POPULAR</b></span> -->
+            <p>
+              <span style="font-size: 20px;" class="error"><b>$14.99</b></span>
+              <span class="grey">/ Monthly</span>
+            </p>
+            <p>
+              <p style="text-align: center;">
+                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
+                <button @click="gotoSubscribePage()" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
+              </p>
+              <p>
+                <input v-model="accept" type="checkbox" id="terms">
+                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+              </p>
+            </p>
+            <hr>
+            <p>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1000</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+            </p>
+          </div>
+          <!-- basic -->
           <div class="box">
             <b>Basic</b>
             <span style="padding: 2px 6px;float: right; font-size: 10px; background: #f3f3f3; border-radius: 2px;"><b style="color: #353535">
@@ -188,15 +260,15 @@
             </p>
             <hr>
             <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b>30</b> tracking numbers per month</span><br>
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
               <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
             </p>
           </div>
           <p style="text-align: left;" class="secondary">
             <i class="fas fa-lock"></i>
-            We use <strong>Stripe</strong> to process purchases and do not know your card details.</p>
+            We use <a href="https://www.stripe.com" target="_blank"><strong>Stripe</strong></a> to process purchases and do not know your card details.</p>
           <p style="text-align: center;">
             <img style="width: 98%; height: auto;" src="https://i.ibb.co/pJCDvHY/secure-stripe-payment.jpg" alt="" srcset="">
           </p>
