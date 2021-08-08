@@ -1,5 +1,5 @@
 // const ADDON_HOST = `https://trackr.workaddons.com`
-const ADDON_HOST = `https://8460b52088dd.ngrok.io`
+const ADDON_HOST = `https://be3493445fb7.ngrok.io`
 // parse server
 // 参考：http://docs.parseplatform.org/rest/guide/#getting-started
 class Klass_ParseServer {

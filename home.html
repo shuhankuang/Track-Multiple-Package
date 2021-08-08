@@ -1,299 +1,350 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top" />
-    <meta charset="UTF-8" />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Track Multiple Packages</title>
-    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous"/>
-    <style>
-      html{
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        width: 280px;
-        margin:0;
-        padding: 0 10px;
-        color: #1d1e20 !important;
-      }
-      #loader {
-        border: 12px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 12px solid #444444;
-        width: 70px;
-        height: 70px;
-        animation: spin 1s linear infinite;
-      }
 
-      @keyframes spin {
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      button {
-        cursor: pointer;
-      }
-      .center {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-      }
-      select {
-        width: 200px;
-      }
-      option {
-        width: 200px;
-      }
-      hr {
-        border-top: 1px dashed #eff1f2;
-        border-bottom: none;
-        margin: 4px 0px;
-      }
-      ul {
-        list-style: none;
-        padding-inline-start: 0;
-      }
-      ul > li {
-        display: inline;
-        padding: 4px;
-        cursor: pointer;
-      }
-      li:hover {
-        color: #3982ed
-      }
-      li.active {
-        color: #3982ed;
-        font-weight: bold;
-      }
-      p {
-        color: #2e2f31 !important
-      }
-      .fas {
-        margin-right: 5px;
-      }
-      .box {
-        padding: 15px;
-        border: 1px solid #f6f6f6;
-        border-radius: 3px;
-        margin-top: 10px;
-      }
-      .free-plan {
-        padding: 2px 6px;
-        font-size: 10px;
-        background: #f3f3f3;
-        border-radius: 2px;
-        font-weight: bold;
-      }
-      .pro-plan {
-        padding: 2px 6px;
-        font-size: 10px;
-        background: #ffe08a;
-        border-radius: 2px;
-        font-weight: bold;
-      }
-    </style>
-    <script src="https://unpkg.com/vue/dist/vue.js"></script>
-  </head>
-  <body>
-    <div id="loader" class="center"></div>
-    <div id="app">
-      <!-- nav -->
-      <div>
-        <span v-if="status" style="float: left;"><span class="pro-plan">BASIC : <span class="error">{{status.new_remaining || status.remaining}}</span> / {{status.max}}</span></span>
-        <ul style="text-align: right;">
-          <li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
-          <li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}"><i class="fas fa-question-circle"></i></li>
-          <li @click="gotoPage('setting')" :class="{'active': page==='setting'}"><i class="fas fa-cog"></i></li>
-          <li @click="gotoPage('pro')" :class="{'active': page==='pro'}"><i class="fas fa-gem"></i></li>
-        </ul>
-        <hr>
-      </div>
-      <!-- home -->
-      <div v-if="page==='home'">
-        <div class="form-group" style="margin-top: 10px;">
-          <textarea v-model="nums" style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
-          <label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
-          <p>
-            <button v-if="!isLoading" @click="track" style="width: 100%" class="action">
+<head>
+	<base target="_top" />
+	<meta charset="UTF-8" />
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Track Multiple Packages</title>
+	<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+		integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
+		crossorigin="anonymous" />
+	<style>
+		html {
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			width: 280px;
+			margin: 0;
+			margin-top: 56px;
+			padding: 0 10px;
+			color: #1d1e20 !important;
+		}
+
+		#loader {
+			border: 12px solid #f3f3f3;
+			border-radius: 50%;
+			border-top: 12px solid #444444;
+			width: 70px;
+			height: 70px;
+			animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+
+		button {
+			cursor: pointer;
+		}
+
+		.center {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			margin: auto;
+		}
+
+		select {
+			width: 200px;
+		}
+
+		option {
+			width: 200px;
+		}
+
+		hr {
+			border-top: 1px dashed #eff1f2;
+			border-bottom: none;
+			margin: 4px 0px;
+		}
+
+		ul {
+			list-style: none;
+			padding-inline-start: 0;
+		}
+
+		ul>li {
+			display: inline;
+			padding: 4px;
+			cursor: pointer;
+		}
+
+		li:hover {
+			color: #3982ed
+		}
+
+		li.active {
+			color: #3982ed;
+			font-weight: bold;
+		}
+
+		p {
+			color: #2e2f31 !important
+		}
+
+		.fas {
+			margin-right: 5px;
+		}
+
+		.box {
+			padding: 15px;
+			border: 1px solid #f6f6f6;
+			border-radius: 3px;
+			margin-top: 10px;
+		}
+
+		.free-plan {
+			padding: 2px 6px;
+			font-size: 10px;
+			background: #f3f3f3;
+			border-radius: 2px;
+			font-weight: bold;
+		}
+
+		.pro-plan {
+			padding: 2px 6px;
+			font-size: 10px;
+			background: #ffe08a;
+			border-radius: 2px;
+			font-weight: bold;
+			color: #2f2f2f;
+		}
+
+		.nav {
+			position: fixed;
+			width: 280px;
+			top: 0;
+			left: 10px;
+			z-index: 99;
+			background-color: white;
+		}
+	</style>
+	<script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="loader" class="center"></div>
+	<div id="app">
+		<div v-if="me">
+			<!-- nav -->
+			<div class="nav">
+				<span v-if="state" style="float: left; margin-left: 0px; margin-top: 13px;"><span class="pro-plan">{{state.plan}} : <span class="error">{{state.new_remaining || state.remaining}}</span>
+				/ {{state.max}}</span></span>
+				<ul style="text-align: right;">
+					<li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
+					<li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}">
+						<i class="fas fa-question-circle"></i></li>
+					<li v-if="false" @click="gotoPage('setting')" :class="{'active': page==='setting'}">
+						<i class="fas fa-cog"></i></li>
+					<li @click="gotoPage('pro')" :class="{'active': page==='pro'}"><i class="fas fa-gem"></i></li>
+				</ul>
+				<hr>
+			</div>
+			<!-- home -->
+			<div v-if="page==='home'" style="">
+				<div class="form-group" style="margin-top: 10px;">
+					<textarea v-model="nums" style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
+					<label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
+					<p>
+						<button v-if="!isLoading" @click="track" style="width: 100%" class="action">
               <i class="fas fa-search"></i>Track
             </button>
-            <button v-if="isLoading" style="width: 100%" class="action" disabled>
+						<button v-if="isLoading" style="width: 100%" class="action" disabled>
               <i class="fas fa-spin fa-spinner"></i>Track
             </button>
-          </p>
-          <p>
-            {{logs}}
-          </p>
-        </div>
-      </div>
-      <!-- setting -->
-      <div v-if="page==='setting'">
-        <p>
-          <i class="fas fa-user"></i>
-          {{me.email}}
-        </p>
-        <hr>
-      </div>
-      <!-- faqs -->
-      <div v-if="page==='faqs'">
-        <p>
-          <b>
+					</p>
+					<p>
+						{{logs}}
+					</p>
+				</div>
+			</div>
+			<!-- setting -->
+			<div v-if="page==='setting'">
+				<p>
+					<i class="fas fa-user"></i>
+					{{me.email}}
+				</p>
+				<hr>
+			</div>
+			<!-- faqs -->
+			<div v-if="page==='faqs'">
+				<p>
+					<b>
           <i class="fas fa-question-circle"></i>
           FAQs and Troubleshooting</b>
+				</p>
+				<p>
+					Got a question? Something doesn’t work? Most likely you are not alone and your question got an
+					answer at our evergrowing FAQs page.
+					<br>
+					<br>
+					<button style="width: 100%;">FAQs PAGE</button>
+					<br>
         </p>
-        <p>
-          Got a question? Something doesn’t work? Most likely you are not alone and your question got an answer at our evergrowing FAQs page.
-          <br>
-          <br>
-          <button style="width: 100%;">FAQs PAGE</button>
-          <br>
-        </p>
-        <hr>
-        <p>
-          Do you have an idea for making <u>SheetTrackr</u> better? We'd love to hear about it!
-          <br>
-          <i class="fas fa-envelope"></i>
-          <span style="color: #3b84f2">getworkaddons@gmail.com</span>
-        </p>
-      </div>
-      <!-- pro -->
-      <div v-if="page==='pro'">
-        <div>
-          <!-- standard -->
-          <div class="box">
-            <b>Standard</b>
-            <!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+					<hr>
+					<p>
+						Do you have an idea for making <u>SheetTrackr</u> better? We'd love to hear about it!
+						<br>
+						<i class="fas fa-envelope"></i>
+						<span style="color: #3b84f2">getworkaddons@gmail.com</span>
+					</p>
+			</div>
+			<!-- pro -->
+			<div v-if="page==='pro'">
+				<!-- pricing -->
+				<div v-if="me && me.exUser && !me.exUser.pro">
+					<!-- standard -->
+					<div class="box">
+						<b>Standard</b>
+						<!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
               <i class="fas fa-fire-alt"></i>
               POPULAR</b></span> -->
-            <p>
-              <span style="font-size: 20px;" class="error"><b>$6.99</b></span>
-              <span class="grey">/ Monthly</span>
-            </p>
-            <p>
-              <p style="text-align: center;">
-                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage('standard')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
-              </p>
-              <p>
-                <input v-model="accept" type="checkbox" id="terms">
-                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
-              </p>
-            </p>
-            <hr>
-            <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">250</b> tracking numbers per month</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
-            </p>
-          </div>
-          <!-- pro -->
-          <div class="box">
-            <b>Professional</b>
-            <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+						<p>
+							<span style="font-size: 20px;" class="error"><b>$6.99</b></span>
+							<span class="grey">/ Month</span>
+						</p>
+						<p>
+							<p style="text-align: center;">
+								<!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
+								<button @click="gotoSubscribePage('standard')" class="action" style="width: 100%; margin-top: 5px;"><i class="fas fa-shopping-cart"></i>BUY NOW</button>
+							</p>
+							<p>
+								<input v-model="accept" type="checkbox" id="terms">
+								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+							</p>
+						</p>
+						<hr>
+						<p>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">250</b> tracking numbers per month</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+						</p>
+					</div>
+					<!-- pro -->
+					<div class="box">
+						<b>Professional</b>
+						<span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
               <i class="fas fa-fire-alt"></i>
               POPULAR</b></span>
-            <p>
-              <span style="font-size: 20px;" class="error"><b>$9.99</b></span>
-              <span class="grey">/ Monthly</span>
-            </p>
-            <p>
-              <p style="text-align: center;">
-                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage('professional')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
-              </p>
-              <p>
-                <input v-model="accept" type="checkbox" id="terms">
-                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
-              </p>
-            </p>
-            <hr>
-            <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">500</b> tracking numbers per month</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
-            </p>
-          </div>
-          <!-- business -->
-          <div class="box">
-            <b>Business</b>
-            <!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
+						<p>
+							<span style="font-size: 20px;" class="error"><b>$9.99</b></span>
+							<span class="grey">/ Monthly</span>
+						</p>
+						<p>
+							<p style="text-align: center;">
+								<!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
+								<button @click="gotoSubscribePage('professional')" class="action" style="width: 100%; margin-top: 5px;"><i class="fas fa-shopping-cart"></i>BUY NOW</button>
+							</p>
+							<p>
+								<input v-model="accept" type="checkbox" id="terms">
+								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+							</p>
+						</p>
+						<hr>
+						<p>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">500</b> tracking numbers per month</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+						</p>
+					</div>
+					<!-- business -->
+					<div class="box">
+						<b>Business</b>
+						<!-- <span style="padding: 2px 6px;float: right; font-size: 10px; background: #ffe08a; border-radius: 2px;"><b style="color: #353535">
               <i class="fas fa-fire-alt"></i>
               POPULAR</b></span> -->
-            <p>
-              <span style="font-size: 20px;" class="error"><b>$14.99</b></span>
-              <span class="grey">/ Monthly</span>
-            </p>
-            <p>
-              <p style="text-align: center;">
-                <!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
-                <button @click="gotoSubscribePage('business')" class="action" style="width: 100%; margin-top: 5px;">BUY NOW</button>
-              </p>
-              <p>
-                <input v-model="accept" type="checkbox" id="terms">
-                <label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
-              </p>
-            </p>
-            <hr>
-            <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1000</b> tracking numbers per month</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
-            </p>
-          </div>
-          <!-- basic -->
-          <div class="box">
-            <b>Basic</b>
-            <span style="padding: 2px 6px;float: right; font-size: 10px; background: #f3f3f3; border-radius: 2px;"><b style="color: #353535">
+						<p>
+							<span style="font-size: 20px;" class="error"><b>$14.99</b></span>
+							<span class="grey">/ Month</span>
+						</p>
+						<p>
+							<p style="text-align: center;">
+								<!-- <span style="font-size: 11px;" class="error"><b>7 DAYS MONEY BACK GUARANTEE.</b></span> -->
+								<button @click="gotoSubscribePage('business')" class="action" style="width: 100%; margin-top: 5px;"><i class="fas fa-shopping-cart"></i>BUY NOW</button>
+							</p>
+							<p>
+								<input v-model="accept" type="checkbox" id="terms">
+								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+							</p>
+						</p>
+						<hr>
+						<p>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1000</b> tracking numbers per month</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+						</p>
+					</div>
+					<!-- basic -->
+					<div class="box">
+						<b>Basic</b>
+						<span style="padding: 2px 6px;float: right; font-size: 10px; background: #f3f3f3; border-radius: 2px;"><b style="color: #353535">
               FREE</b></span>
-            <p>
-              <span style="font-size: 20px;" class="error"><b>$0</b></span>
-              <span class="grey">/ Monthly</span>
-            </p>
-            <hr>
-            <p>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">30</b> tracking numbers per month</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
-            </p>
-          </div>
-          <p style="text-align: left;" class="secondary">
-            <i class="fas fa-lock"></i>
-            We use <a href="https://www.stripe.com" target="_blank"><strong>Stripe</strong></a> to process purchases and do not know your card details.</p>
-          <p style="text-align: center;">
-            <img style="width: 98%; height: auto;" src="https://i.ibb.co/pJCDvHY/secure-stripe-payment.jpg" alt="" srcset="">
+						<p>
+							<span style="font-size: 20px;" class="error"><b>$0</b></span>
+							<span class="grey">/ Month</span>
+						</p>
+						<hr>
+						<p>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">30</b> tracking numbers per month</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
+							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+						</p>
+					</div>
+					<!--  -->
+					<p style="text-align: left;" class="secondary">
+						<i class="fas fa-lock"></i>
+						We use <a href="https://www.stripe.com" target="_blank"><strong>Stripe</strong></a> to process
+						purchases and do not know your card details.</p>
+					<p style="text-align: center;">
+						<img style="width: 98%; height: auto;" src="https://i.ibb.co/pJCDvHY/secure-stripe-payment.jpg" alt="" srcset="">
           </p>
-        </div>
-      </div>
-      <!-- footer -->
-      <div style="text-align: center; margin-top: 20px;">
-        <p style="color: grey;">&copy; 2021 WorkAddons.</p>
-      </div>
-    </div>
-  </body>
-  <script>
-    document.onreadystatechange = function () {
-      if (document.readyState !== "complete") {
-        document.querySelector("body").style.visibility = "hidden";
-        document.querySelector("#loader").style.visibility = "visible";
-      } else {
-        document.querySelector("#loader").style.display = "none";
-        document.querySelector("body").style.visibility = "visible";
-      }
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-  <script>
-    function serverRun(func, params, onSuccess, onFailure) {
+				</div>
+				<!-- subscription manage -->
+				<div v-if="me && me.exUser && me.exUser.pro">
+					<p>
+						<i class="fas fa-user"></i>
+						{{me.email}}
+					</p>
+					<hr>
+					<p>
+						<button class="action" style="width: 100%">SUBSCRIPTION MANAGE</button>
+					</p>
+				</div>
+			</div>
+			<!-- footer -->
+			<div style="text-align: center; margin-top: 20px;">
+				<p style="color: grey;">&copy; 2021 WorkAddons.</p>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	// document.onreadystatechange = function () {
+  //     if (document.readyState !== "complete") {
+  //       document.querySelector("body").style.visibility = "hidden";
+  //       document.querySelector("#loader").style.visibility = "visible";
+  //     } else {
+  //       document.querySelector("#loader").style.display = "none";
+  //       document.querySelector("body").style.visibility = "visible";
+  //     }
+  //   };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script>
+	function serverRun(func, params, onSuccess, onFailure) {
       google.script.run
         .withSuccessHandler(onSuccess)
         .withFailureHandler(onFailure)
@@ -308,7 +359,7 @@
         nums: '',
         me: undefined,
         accept: false,
-        status: undefined,
+        state: undefined,
       },
       created() {
         let _this = this
@@ -317,8 +368,8 @@
         this.nums = test
         serverRun('doGetMe', {}, function(result){
           _this.me = result
-          _this.status = result.status
-          console.log(result)
+          _this.state = result.state
+          document.querySelector("#loader").style.visibility = "hidden";
         }, function(){})
       },
       methods: {
@@ -333,6 +384,10 @@
           }
           let url = this.me.subscribeURL + `&plan=${plan}`
           window.open(url)
+        },
+
+        gotoSubscriptionManagePage () {
+
         },
 
         showAlert () {
@@ -360,9 +415,8 @@
           serverRun('doTrack', tks, function(result){
             console.log(result)
             let filter_result = result
-            let status = filter_result.status
-            _this.status = status
-            console.log(status)
+            let state = filter_result.state
+            _this.state = state
             _this.isLoading = false
           }, function(err) {
             console.log(err)
@@ -372,5 +426,6 @@
         }
       },
     });
-  </script>
+</script>
+
 </html>

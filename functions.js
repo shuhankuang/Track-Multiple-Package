@@ -170,9 +170,9 @@ function doGetMe () {
   me.user = JSON.parse(user)
   me.email = User.email()
   me.exUser = JSON.parse(exUser)
-  let status = ParseServer.runCloudCode('fetchUserStatus', {})
+  let state = ParseServer.runCloudCode('fetchUserStatus', {})
+  me.state = state.result
   // me.exUser.pro = true
-  me.status = status.result
   let token_obj = {
     uid: me.user.objectId,
     email: me.email,
@@ -190,12 +190,14 @@ function doGetMe () {
   // let business_token = cipher(APP_NAME)(JSON.stringify(token_obj))
   // console.log(token_obj)
   me.subscribeURL = `${ADDON_HOST}/stripe/redirect?token=${token}`
+  // me.subscribeURL = `http://localhost:3120/stripe/redirect?token=${token}`
   me.version = VERSION
   // me.subscribeURLs = {
   //   standard: `${ADDON_HOST}/stripe/redirect/${standard_token}`,
   //   professional: `${ADDON_HOST}/stripe/redirect/${professional_token}`,
   //   business: `${ADDON_HOST}/stripe/redirect/${business_token}`,
   // }
+  
   return me
 }
 
