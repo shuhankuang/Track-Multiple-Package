@@ -189,6 +189,11 @@
           <div v-for="(sheet, index) in sheets" class="box">
             <i class="fas fa-sync-alt"></i>
             <a :href="`https://docs.google.com/spreadsheets/d/${sheet.sheetId}`" target="blank">{{sheet.sheetId}}</a>
+            <p style="text-align: right; margin-bottom: 0px;">
+              <button @click="removeSheetMonitor(sheet.sheetId)" class="create">
+              <i class="fas fa-trash"></i>
+              Remove</button>
+            </p>
           </div>
         </div>
       </div>
@@ -465,11 +470,19 @@
           this.addToMoIsLoading = true
           let _this = this
           serverRun('addSpreadsheetToMonitor', {}, function(result){
-            console.log(result)
+            // console.log(result)
             _this.addToMoIsLoading = false
             _this.sheets = result
           }, function(err){
             _this.addToMoIsLoading = false
+          })
+        },
+
+        removeSheetMonitor (sheetId) {
+          let _this = this
+          serverRun('removeSpreadsheetMonitor', sheetId, function(result){
+            console.log(result)
+            _this.sheets = result
           })
         },
 
@@ -496,13 +509,13 @@
           }
           this.isLoading = true
           serverRun('doTrack', tks, function(result){
-            console.log(result)
+            // console.log(result)
             let filter_result = result
             let state = filter_result.state
             _this.state = state
             _this.isLoading = false
           }, function(err) {
-            console.log(err)
+            // console.log(err)
             // _this.logs = result
             _this.isLoading = false
           })

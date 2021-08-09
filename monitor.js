@@ -16,12 +16,16 @@ class Klass_Monitor {
 
   getAllMonitors () {
     let monitors = userProperties.getProperty('monitors')
-    console.log(monitors)
+    // console.log(monitors)
     if(!monitors){
       this.monitors = []
       return this.monitors
     }
-    monitors = JSON.parse(monitors)
+    try{
+      monitors = JSON.parse(monitors)
+    }catch(e){
+      return []
+    }
     return monitors
   }
 
@@ -34,7 +38,7 @@ class Klass_Monitor {
     for( var i = 0; i < monitors.length; i++ ){
       let monitor = monitors[i]
       if(monitor.sheetId === sheetId){
-        return
+        return monitors
       }
     }
     // 创建监听器
@@ -45,8 +49,29 @@ class Klass_Monitor {
       sheetId,
     })
     userProperties.setProperty('monitors', JSON.stringify(monitors))
-    console.log(monitors)
+    // console.log(monitors)
     this.monitors = monitors
+    return monitors
+  }
+
+  removeSheetMonitor (sheetId) {
+    let monitors = this.getAllMonitors()
+    let index = -1
+    let triggerId = undefined
+    for( var i = 0; i < monitors.length; i++ ){
+      let monitor = monitors[i]
+      if(monitor.sheetId === sheetId){
+        index = i
+        triggerId = monitor.triggerId
+        break
+      }
+    }
+    monitors.splice(index, 1)
+    this.monitors = monitors
+    userProperties.setProperty('monitors', monitors)
+    if(triggerId){
+      Trigger.removeTrigger(triggerId, sheetId)
+    }
     return monitors
   }
 

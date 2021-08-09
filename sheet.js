@@ -1,18 +1,29 @@
 // 针对 sheet 的操作，用于自动更新
 
-function getAllSheets () {
+function updateAllSpreadsheets() {
+  let monitors = Monitor.getAllMonitors()
+  if(monitors.length < 1) {
+    return
+  }
+  for(let i = 0; i < monitors.length; i++) {
+    let monitor = monitors[i]
+    updateOneSpreadsheet_(monitor.sheetId)
+  }
+  return true
+}
+
+function updateOneSpreadsheet_ (id) {
   let me = User.me()
   let uid = me.objectId
 
-  let sheets = SpreadsheetApp.openById('1oPp5VkQiDRH6r-kvXI7w89qQnHm8ZtSkpvUfv59R_zc')
-    .getSheets()
+  let spreadsheet = SpreadsheetApp.openById(id)
+  let sheets = spreadsheet.getSheets()
 
   for(var i = 0; i < sheets.length; i++ ){
     let sheet = sheets[i]
-    let sheetId = sheet.getSheetId()
     let last_row = sheet.getLastRow()
     if(last_row < 1) {
-      console.log('--- END ---')
+      // console.log('--- END ---')
       continue
     }
     let range = sheet.getRange(1, 1, last_row)
@@ -20,8 +31,8 @@ function getAllSheets () {
     let notes = range.getNotes()
     // 配对
     let tracking_numbers = []
+    let rows = []
     for (let k = 0; k < values.length; k++ ) {
-      console.log('k:' + k)
       let value = values[k][0]
       let note = notes[k][0]
       let key = note.split('#')[1]
@@ -29,15 +40,23 @@ function getAllSheets () {
         continue
       }
       let _text = decipher(APP_NAME)(key)
-      let arr = _text.split('|')
-      let isOK = value === arr[0] && uid === arr[1]
-      console.log(isOK)
+      let slat = _text.split('|')
+      let isOK = value === slat[0] && uid === slat[1]
+      // console.log(isOK)
       if(isOK) {
         tracking_numbers.push(value)
+        rows.push(k + 1)
       }
-      // if(value )
     }
-    console.log(tracking_numbers)
-    console.log('--- END ---')
+    let params = {
+      spreadsheet,
+      sheet,
+      rows,
+    }
+    console.log(tracking_numbers, params)
+    monitorDoTrack(tracking_numbers, params)
+    // console.log(tracking_numbers)
+    // console.log(rows)
+    // console.log('--- END ---')
   }
 }

@@ -43,6 +43,20 @@ class Klass_Trigger {
   hasUserTrigger (name) {
 
   }
+
+  removeTrigger (triggerId, sheetId) {
+    let doc = SpreadsheetApp.openById(sheetId)
+    // console.log(doc.getSheetId())
+    var allTriggers = ScriptApp.getUserTriggers(doc)
+    // console.log(allTriggers)
+    for (var i = 0; i < allTriggers.length; i++) {
+      if (allTriggers[i].getUniqueId() === triggerId) {
+        ScriptApp.deleteTrigger(allTriggers[i])
+        break
+      }
+    }
+    return true
+  }
 }
 
 let Trigger = new Klass_Trigger()

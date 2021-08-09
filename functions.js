@@ -47,8 +47,47 @@ function doTrack (tracking_numbers) {
 
   // 搜索物流信息
   let trackings_result = af_batchTracking(search_trackikng_numbers)
+  // 将信息插入到当前 sheet 中
+  let spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+  let sheet = spreadsheet.getActiveSheet()
+  let params = {
+    spreadsheet,
+    sheet,
+  }
+  insertTrackingsToSheet(trackings_result, params)
+  return filter_result.result
+}
+
+/**
+ * 定时器触发的更新
+ */
+function monitorDoTrack (tracking_numbers, params) {
+  // tracking_numbers = ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
+  let spreadsheet = params.spreadsheet
+  let sheet = params.sheet
+  let rows = params.rows
+
+  let uniq = [...new Set(tracking_numbers)]
+  // console.log(uniq)
+  tracking_numbers = uniq
+  // 过滤订单，排除重复的
+  let filter_result = filterTrackingNumbers(tracking_numbers)
+  console.log(filter_result)
+  // 获得新的订单号
+  let new_trackings = filter_result.result.new_trackings
+  // 记录新的订单号
+  let insert_result = insertNewTrackingNumberToUser(new_trackings)
+  console.log(insert_result)
+  // 配对单号与数据库 ID
+
+  // 本次需要搜索的单号（包含重复的）
+  let search_trackikng_numbers = filter_result.result.search_trackings
+  console.log(search_trackikng_numbers)
+
+  // 搜索物流信息
+  let trackings_result = af_batchTracking(search_trackikng_numbers)
   // 将信息插入到 sheet 中
-  insertTrackingsToSheet(trackings_result)
+  insertTrackingsToSheet(trackings_result, params)
   return filter_result.result
 }
 
@@ -103,39 +142,46 @@ function fetchUserRemaining () {
 /**
  * 将物流内容插入的表单里
  * @param {JSON} json  返回的物流数据
+ * @param {object} params {spreadsheetId, sheetId, rows} 物流单号对应的行，用于 Monitor 的更新
  */
-function insertTrackingsToSheet (json) {
+function insertTrackingsToSheet (json, params) {
   let me = User.me()
   let uid = me.objectId
   // 
-  let data = json.data
-  // data = af_data
-  let trackings = data.direct_trackings
+  let spreadsheet = params.spreadsheet
+  let sheet = params.sheet
+  let rows = params.rows
   // 
-  let cell_texts = []
+  let trackings = json.data.direct_trackings
+  // 
   for (let i = 0; i < trackings.length; i++) {
     let tracking = trackings[i].tracking
     let checkpoints = tracking.checkpoints
     // inster text to cell
-    let row = i + 1
+    let row
+    if(rows) {
+      row = rows[i]
+    }else{
+      row = i + 1
+    }
     let column = 1
     // tracking_number
-    insterTextToSheet(row, column, tracking.tracking_number)
+    insterTextToSheet(sheet, row, column, tracking.tracking_number)
     // 加密字符，用于判断是否合法的单号，合法就可以进行自动更新
     const _match_key = cipher(APP_NAME)(`${tracking.tracking_number}|${uid}`)
-    insertNoteToSheet(row, column, `TRACKR#${_match_key}`)
+    insertNoteToSheet(sheet, row, column, `TRACKR#${_match_key}`)
     // courier
     column += 1
-    insterTextToSheet(row, column, tracking.courier.name)
+    insterTextToSheet(sheet, row, column, tracking.courier.name)
     // service_type_name
     column += 1
-    insterTextToSheet(row, column, tracking.service_type_name)
+    insterTextToSheet(sheet, row, column, tracking.service_type_name)
     // latest_status
     column += 1
-    insterTextToSheet(row, column, tracking.latest_status)
+    insterTextToSheet(sheet, row, column, tracking.latest_status)
     // delivery_days
     column += 1
-    insterTextToSheet(row, column, `${tracking.delivery_days} Days`)
+    insterTextToSheet(sheet, row, column, `${tracking.delivery_days} Days`)
     // insert checkpoints to sheet
     if(checkpoints.length > 0) {
       column += 1
@@ -146,27 +192,37 @@ function insertTrackingsToSheet (json) {
         const date = new Date(ck.date_time).toLocaleString()
         _note_text += `${ck.message}\n${date}  ${ck.address.raw_location} \n\n`
       })
-      insertNoteToSheet(row, column, _note_text)
+      insertNoteToSheet(sheet, row, column, _note_text)
       // insert the latest checkpoint
       let checkpoint = checkpoints.shift()
       let date = new Date(checkpoint.date_time).toLocaleString()
       let _text = `${date}  ${checkpoint.message} ${checkpoint.address.raw_location}`
-      insterTextToSheet(row, column, _text)
+      insterTextToSheet(sheet, row, column, _text)
     }
     // courier_tracking_link
     column += 1
-    insterTextToSheet(row, column, tracking.courier_tracking_link || tracking.courier_redirect_link)
+    insterTextToSheet(sheet, row, column, tracking.courier_tracking_link || tracking.courier_redirect_link)
   }
 }
 
-function insertNoteToSheet (row, column, text) {
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+function insertNoteToSheet (sheet, row, column, text) {
+  // let sheet
+  // if(sheetId) {
+
+  // }else{
+  //   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  // }
   let cell = sheet.getRange(row, column)
   cell.setNote(text)
 }
 
-function insterTextToSheet (row, column, text) {
-  let sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+function insterTextToSheet (sheet, row, column, text) {
+  // let sheet
+  // if(sheetId) {
+
+  // }else{
+  //   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  // }
   let cell = sheet.getRange(row, column)
   let rich_text = SpreadsheetApp.newRichTextValue()
     .setText(text)
@@ -179,49 +235,6 @@ function insterTextToSheet (row, column, text) {
   }
 }
 
-/**
- * 获取当前用户
- */
-function doGetMe () {
-  // let me = User.email()
-  // console.log(me)
-  let me = {}
-  let user = userProperties.getProperty('user')
-  let exUser = userProperties.getProperty('exUser')
-  me.user = JSON.parse(user)
-  me.email = User.email()
-  me.exUser = JSON.parse(exUser)
-  let state = ParseServer.runCloudCode('fetchUserStatus', {})
-  me.state = state.result
-  // me.exUser.pro = true
-  let token_obj = {
-    uid: me.user.objectId,
-    email: me.email,
-    app: APP_NAME,
-    v: VERSION,
-  }
-  let token = cipher(APP_NAME)(JSON.stringify(token_obj))
-  // Object.assign(token_obj, {plan: 'standard'})
-  // // console.log(token_obj)
-  // let standard_token = cipher(APP_NAME)(JSON.stringify(token_obj))
-  // Object.assign(token_obj, {plan: 'professional'})
-  // // console.log(token_obj)
-  // let professional_token = cipher(APP_NAME)(JSON.stringify(token_obj))
-  // Object.assign(token_obj, {plan: 'business'})
-  // let business_token = cipher(APP_NAME)(JSON.stringify(token_obj))
-  // console.log(token_obj)
-  me.subscribeURL = `${ADDON_HOST}/stripe/redirect?token=${token}`
-  // me.subscribeURL = `http://localhost:3120/stripe/redirect?token=${token}`
-  me.version = VERSION
-  // me.subscribeURLs = {
-  //   standard: `${ADDON_HOST}/stripe/redirect/${standard_token}`,
-  //   professional: `${ADDON_HOST}/stripe/redirect/${professional_token}`,
-  //   business: `${ADDON_HOST}/stripe/redirect/${business_token}`,
-  // }
-  console.log(me)
-  return me
-}
-
 function manageSubscrptoin () {
   let exUser = userProperties.getProperty('exUser')
   exUser = JSON.parse(exUser)
@@ -231,26 +244,6 @@ function manageSubscrptoin () {
   let result = ParseServer.runCloudCode('billingportal', {customer})
   console.log(result)
   return result.result
-}
-
-/**
- * 弹出 alert 窗口
- */
-function showAlert (params) {
-  var ui = SpreadsheetApp.getUi()
-  var result = ui.alert(
-     params.title,
-     params.message,
-     ui.ButtonSet.OK)
-
-  // Process the user's response.
-  if (result == ui.Button.YES) {
-    // User clicked "Yes".
-    // ui.alert('Confirmation received.');
-  } else {
-    // User clicked "No" or X in the title bar.
-    // ui.alert('Permission denied.');
-  }
 }
 /**
  * 测试 17track.net 的接口调用（可用隐私模式获取 cookies, 用 puppeeter 进行获取 cookies）
@@ -275,50 +268,6 @@ function getCookies () {
 }
 
 /**
- * 创建一个物流文件监听器，监听当前文档的所有单号，定时更新
- */
-// function createTrackingMonitor () {
-//   let functionName = 'updateSheetTrackings'
-//   let sheetId = SpreadsheetApp.getActive().getId()
-//   let monitors = userProperties.getProperty('monitors')
-//   monitors = JSON.parse(monitors)
-//   // 如果当前文档已经有了监听器了，那么就不要监听了
-//   for( var i = 0; i < monitors.length; i++ ){
-//     let monitor = monitors[i]
-//     if(monitor.sheetId === sheetId){
-//       return
-//     }
-//   }
-//   // 创建监听器
-//   let tId = Trigger.createMinutesTrigger(1, functionName)
-//   console.log(tId)
-//   monitors.push({
-//     triggerId: tId,
-//     sheetId,
-//   })
-//   userProperties.setProperty('monitors', JSON.stringify(monitors))
-//   console.log(monitors)
-//   return monitors
-// }
-
-// function listMonitors () {
-//   let monitors = userProperties.getProperty('monitors')
-//   monitors = JSON.parse(monitors)
-//   console.log(monitors)
-// }
-
-// function clearMonitors () {
-//   userProperties.setProperty('monitors', JSON.stringify([]))
-// }
-
-// function updateSheetTrackings () {
-//   // console.log('updateSheetTrackings')
-//   let monitors = userProperties.getProperty('monitors')
-//   monitors = JSON.parse(monitors)
-//   console.log(monitors)
-// }
-
-/**
  * 获得所有监听的文件
  */
 function getAllSpreadsheets () {
@@ -331,6 +280,16 @@ function addSpreadsheetToMonitor () {
   let fn = 'updateSheetTrackings'
   let monitors = Monitor.createSheetMonitor(fn)
   return monitors
+}
+
+function removeSpreadsheetMonitor (sheetId) {
+  let monitors = Monitor.removeSheetMonitor(sheetId)
+  return monitors
+}
+
+function updateSheetTrackings () {
+  // console.log('run monitor')
+  // updateAllSpreadsheets()
 }
 
 /**

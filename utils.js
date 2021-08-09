@@ -30,3 +30,66 @@ function decipher(salt) {
       .map(charCode => String.fromCharCode(charCode))
       .join('')
 }
+
+/**
+ * 弹出 alert 窗口
+ */
+function showAlert (params) {
+  var ui = SpreadsheetApp.getUi()
+  var result = ui.alert(
+     params.title,
+     params.message,
+     ui.ButtonSet.OK)
+
+  // Process the user's response.
+  if (result == ui.Button.YES) {
+    // User clicked "Yes".
+    // ui.alert('Confirmation received.');
+  } else {
+    // User clicked "No" or X in the title bar.
+    // ui.alert('Permission denied.');
+  }
+}
+
+/**
+ * 获取当前用户
+ */
+function doGetMe () {
+  // let me = User.email()
+  // console.log(me)
+  let me = {}
+  let user = userProperties.getProperty('user')
+  let exUser = userProperties.getProperty('exUser')
+  me.user = JSON.parse(user)
+  me.email = User.email()
+  me.exUser = JSON.parse(exUser)
+  let state = ParseServer.runCloudCode('fetchUserStatus', {})
+  me.state = state.result
+  // me.exUser.pro = true
+  let token_obj = {
+    uid: me.user.objectId,
+    email: me.email,
+    app: APP_NAME,
+    v: VERSION,
+  }
+  let token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // Object.assign(token_obj, {plan: 'standard'})
+  // // console.log(token_obj)
+  // let standard_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // Object.assign(token_obj, {plan: 'professional'})
+  // // console.log(token_obj)
+  // let professional_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // Object.assign(token_obj, {plan: 'business'})
+  // let business_token = cipher(APP_NAME)(JSON.stringify(token_obj))
+  // console.log(token_obj)
+  me.subscribeURL = `${ADDON_HOST}/stripe/redirect?token=${token}`
+  // me.subscribeURL = `http://localhost:3120/stripe/redirect?token=${token}`
+  me.version = VERSION
+  // me.subscribeURLs = {
+  //   standard: `${ADDON_HOST}/stripe/redirect/${standard_token}`,
+  //   professional: `${ADDON_HOST}/stripe/redirect/${professional_token}`,
+  //   business: `${ADDON_HOST}/stripe/redirect/${business_token}`,
+  // }
+  console.log(me)
+  return me
+}
