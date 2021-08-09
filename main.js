@@ -7,7 +7,7 @@ function onInstall(e) {
 /**
  * 打开的时候
  */
-function onOpen() {
+function onOpen(e) {
   // 创建菜单
   var ui = SpreadsheetApp.getUi()
   ui.createMenu('SheetTrackr')
@@ -15,4 +15,14 @@ function onOpen() {
     .addSeparator()
     .addItem('Help', 'openHelp')
     .addToUi()
+}
+
+/**
+ * 当选择改变时候
+ */
+function onSelectionChange (e) {
+  let user = e.user
+  let range = e.range
+  console.log(user)
+  console.log(range)
 }

@@ -114,7 +114,6 @@ class Klass_ParseServer {
       headers: headers,
       muteHttpExceptions: true,
     }
-
     // 处理多余的数据
     if(command === 'get' || command === 'count'|| command === 'query') {
       opts.payload = undefined
@@ -130,7 +129,7 @@ class Klass_ParseServer {
       // console.log(result)
       return result
     }catch(err){
-      // console.log(err)
+      console.log(err)
       return err
     }
   }

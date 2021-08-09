@@ -20,6 +20,7 @@ class Klass_User {
     // console.log(username, password)
     // console.log('try to sign in')
     user = ParseServer.signIn(username, password)
+    console.log(user)
     if(user && user.sessionToken) {
       // console.log('sign in done')
       userProperties.setProperty('user', JSON.stringify(user))
@@ -102,7 +103,8 @@ class Klass_User {
 const User = new Klass_User()
 
 function user_test_signin () {
-  User.signIn()
+  // User.signIn()
+  User.init()
 }
 
 function user_test_logout () {

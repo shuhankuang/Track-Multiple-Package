@@ -39,12 +39,18 @@ let default_setting = {
   num_select: 0, // 插入多少条物流信息
   show_hisotry: true, // 显示单号历史
 }
+// 监听器，存放 trigger Id
+let default_monitors = []
 
 var userProperties = PropertiesService.getUserProperties()
+// 个人设置
 if(!userProperties.getProperty('setting')){
   userProperties.setProperty('setting', JSON.stringify(default_setting))
 }
-
+// 物流单号更新监听器
+if(!userProperties.getProperty('monitors')) {
+  userProperties.setProperty('monitor', JSON.stringify(default_monitors))
+}
 
 // getwebooster@gmail.com 用户的个人页面
 // https://trackr.workaddons.com/subscribe/722b0c722539340c726a0c72653d3d0422003114371f0c727c0c72353d31393c0c726a0c723735242735323f3f2324352210373d31393c7e333f3d0c727c0c723120200c726a0c72042231333b227d1134343f3e0c727c0c72203c313e0c726a0c723d3f3e24383c290c722d72

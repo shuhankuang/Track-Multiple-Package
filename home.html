@@ -8,9 +8,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>Track Multiple Packages</title>
 	<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css" />
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-		integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA=="
-		crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<style>
 		html {
 			margin: 0;
@@ -141,6 +139,7 @@
 				/ {{state.max}}</span></span>
 				<ul style="text-align: right;">
 					<li @click="gotoPage('home')" :class="{'active': page==='home'}"><i class="fas fa-home"></i></li>
+          <li @click="gotoPage('monitors')" :class="{'active': page==='monitors'}"><i class="fas fa-sync"></i></li>
 					<li @click="gotoPage('faqs')" :class="{'active': page==='faqs'}">
 						<i class="fas fa-question-circle"></i></li>
 					<li v-if="false" @click="gotoPage('setting')" :class="{'active': page==='setting'}">
@@ -164,9 +163,35 @@
 					</p>
 					<p>
 						{{logs}}
+            <button @click="logout" class="action">LOGOUT</button>
 					</p>
 				</div>
 			</div>
+      <!-- monitors -->
+      <div v-if="page==='monitors'">
+        <p>
+          <i class="fas fa-info-circle"></i>
+          Add the current spreadsheet to monitor, which will automatically update the trackings information every <b class="error">2</b> hours.
+        </p>
+        <hr>
+        <p>
+          <button v-if="!addToMoIsLoading" @click="addToMonitor()" class="action" style="width: 100%">
+            <i class="fas fa-plus-square"></i>
+            Add Spreadsheet to Monitor</button>
+          <button v-if="addToMoIsLoading" class="action" style="width: 100%" disabled>
+            <i class="fas fa-spin fa-spinner"></i></button>
+        </p>
+        <hr>
+        <div v-if="sheets.length > 0">
+          <p>
+            <b>Spreadsheets:</b>
+          </p>
+          <div v-for="(sheet, index) in sheets" class="box">
+            <i class="fas fa-sync-alt"></i>
+            <a :href="`https://docs.google.com/spreadsheets/d/${sheet.sheetId}`" target="blank">{{sheet.sheetId}}</a>
+          </div>
+        </div>
+      </div>
 			<!-- setting -->
 			<div v-if="page==='setting'">
 				<p>
@@ -187,7 +212,7 @@
 					answer at our evergrowing FAQs page.
 					<br>
 					<br>
-					<button style="width: 100%;">FAQs PAGE</button>
+					<button style="width: 100%;">FAQs Page</button>
 					<br>
         </p>
 					<hr>
@@ -202,6 +227,16 @@
 			<div v-if="page==='pro'">
 				<!-- pricing -->
 				<div v-if="me && me.exUser && !me.exUser.pro">
+          <p>
+						<i class="fas fa-user"></i>
+						{{me.email}}
+					</p>
+          <hr>
+          <p>
+            Your Current Plan: 
+            <b style="color: #357cea">{{state.plan}}</b>
+          </p>
+					<hr>
 					<!-- standard -->
 					<div class="box">
 						<b>Standard</b>
@@ -309,7 +344,7 @@
 						We use <a href="https://www.stripe.com" target="_blank"><strong>Stripe</strong></a> to process
 						purchases and do not know your card details.</p>
 					<p style="text-align: center;">
-						<img style="width: 98%; height: auto;" src="https://i.ibb.co/pJCDvHY/secure-stripe-payment.jpg" alt="" srcset="">
+						<img style="width: 98%; height: auto;" src="https://i.imgur.com/ieqCXoF.jpg" alt="" srcset="">
           </p>
 				</div>
 				<!-- subscription manage -->
@@ -318,15 +353,26 @@
 						<i class="fas fa-user"></i>
 						{{me.email}}
 					</p>
+          <hr>
+          <p>
+            Your Current Plan: 
+            <b style="color: #357cea">{{state.plan}}</b>
+          </p>
 					<hr>
+          <p>
+            You can cancel your subscription at anytime.
+          </p>
 					<p>
-						<button class="action" style="width: 100%">SUBSCRIPTION MANAGE</button>
+						<button v-if="!subIsLoading" @click="gotoSubscriptionManagePage" class="action" style="width: 100%">Manage Subscription</button>
+            <button v-if="subIsLoading" class="action" style="width: 100%" disabled>
+              <i class="fas fa-spin fa-spinner"></i>
+            </button>
 					</p>
 				</div>
 			</div>
 			<!-- footer -->
 			<div style="text-align: center; margin-top: 20px;">
-				<p style="color: grey;">&copy; 2021 WorkAddons.</p>
+				<p class="grey">&copy; 2021 SheetTrackr.</p>
 			</div>
 		</div>
 	</div>
@@ -354,27 +400,46 @@
       el: "#app",
       data: {
         isLoading: false,
-        page: 'pro',
+        page: 'monitors',
         logs: '',
         nums: '',
+        sheets: [],
         me: undefined,
         accept: false,
         state: undefined,
+        subIsLoading: false, // 订阅管理
+        addToMoIsLoading: false, // 添加监听
       },
       created() {
         let _this = this
-        // let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
-        let test = '9405511108400894874262'
+        let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
+        // let test = '9405511108400894874262'
         this.nums = test
+        // get current user info
         serverRun('doGetMe', {}, function(result){
           _this.me = result
           _this.state = result.state
           document.querySelector("#loader").style.visibility = "hidden";
         }, function(){})
+        // get the speadsheet
+        serverRun('getAllSpreadsheets', {}, function(result){
+          console.log(result)
+          _this.sheets = result
+        })
       },
       methods: {
         gotoPage (page) {
           this.page = page
+        },
+
+        openURL (url) {
+          window.open(url)
+        },
+
+        logout () {
+          serverRun('logout', {}, function(result){
+            console.log('logout success!')
+          })
         },
 
         gotoSubscribePage (plan) {
@@ -387,7 +452,25 @@
         },
 
         gotoSubscriptionManagePage () {
+          let _this = this
+          this.subIsLoading = true
+          serverRun('manageSubscrptoin', {}, function(result){
+            _this.subIsLoading = false
+            let url = result.url
+            window.open(url)
+          }, function(err){})
+        },
 
+        addToMonitor () {
+          this.addToMoIsLoading = true
+          let _this = this
+          serverRun('addSpreadsheetToMonitor', {}, function(result){
+            console.log(result)
+            _this.addToMoIsLoading = false
+            _this.sheets = result
+          }, function(err){
+            _this.addToMoIsLoading = false
+          })
         },
 
         showAlert () {

@@ -1,7 +1,4 @@
 /**
- * @OnlyCurrentDoc
- */
-/**
  * 打开侧栏的操作界面
  */
 function openSidebar() {
@@ -30,18 +27,24 @@ function openHelp() {
  */
 function doTrack (tracking_numbers) {
   // console.log(tracking_numbers)
-  // tracking_numbers = ['9361289738009091755413', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262']
+  tracking_numbers = ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
+  let uniq = [...new Set(tracking_numbers)]
+  // console.log(uniq)
+  tracking_numbers = uniq
   // 过滤订单，排除重复的
   let filter_result = filterTrackingNumbers(tracking_numbers)
-  console.log(filter_result.result)
+  console.log(filter_result)
   // 获得新的订单号
   let new_trackings = filter_result.result.new_trackings
   // 记录新的订单号
   let insert_result = insertNewTrackingNumberToUser(new_trackings)
-  // console.log(insert_result)
-  // 本次需要搜索的单号
+  console.log(insert_result)
+  // 配对单号与数据库 ID
+
+  // 本次需要搜索的单号（包含重复的）
   let search_trackikng_numbers = filter_result.result.search_trackings
-  // console.log(search_trackikng_numbers)
+  console.log(search_trackikng_numbers)
+
   // 搜索物流信息
   let trackings_result = af_batchTracking(search_trackikng_numbers)
   // 将信息插入到 sheet 中
@@ -49,6 +52,9 @@ function doTrack (tracking_numbers) {
   return filter_result.result
 }
 
+/**
+ * 过滤当前查询的单号，重复的不扣费
+ */
 function filterTrackingNumbers (tracking_numbers) {
   let data = {
     tracking_numbers,
@@ -96,8 +102,12 @@ function fetchUserRemaining () {
 }
 /**
  * 将物流内容插入的表单里
+ * @param {JSON} json  返回的物流数据
  */
 function insertTrackingsToSheet (json) {
+  let me = User.me()
+  let uid = me.objectId
+  // 
   let data = json.data
   // data = af_data
   let trackings = data.direct_trackings
@@ -111,7 +121,9 @@ function insertTrackingsToSheet (json) {
     let column = 1
     // tracking_number
     insterTextToSheet(row, column, tracking.tracking_number)
-    insertNoteToSheet(row, column, `TRACK # ${tracking.tracking_number}`)
+    // 加密字符，用于判断是否合法的单号，合法就可以进行自动更新
+    const _match_key = cipher(APP_NAME)(`${tracking.tracking_number}|${uid}`)
+    insertNoteToSheet(row, column, `TRACKR#${_match_key}`)
     // courier
     column += 1
     insterTextToSheet(row, column, tracking.courier.name)
@@ -124,12 +136,21 @@ function insertTrackingsToSheet (json) {
     // delivery_days
     column += 1
     insterTextToSheet(row, column, `${tracking.delivery_days} Days`)
-    // checkpoint
+    // insert checkpoints to sheet
     if(checkpoints.length > 0) {
       column += 1
-      let checkpoint = checkpoints.pop()
-      let date = new Date(checkpoint.created_at).toLocaleString()
-      let _text = `${date} ${checkpoint.message} ${checkpoint.address.raw_location}`
+      checkpoints.reverse()
+      // insert all the checkpoints
+      let _note_text = ''
+      checkpoints.map(ck => {
+        const date = new Date(ck.date_time).toLocaleString()
+        _note_text += `${ck.message}\n${date}  ${ck.address.raw_location} \n\n`
+      })
+      insertNoteToSheet(row, column, _note_text)
+      // insert the latest checkpoint
+      let checkpoint = checkpoints.shift()
+      let date = new Date(checkpoint.date_time).toLocaleString()
+      let _text = `${date}  ${checkpoint.message} ${checkpoint.address.raw_location}`
       insterTextToSheet(row, column, _text)
     }
     // courier_tracking_link
@@ -197,8 +218,19 @@ function doGetMe () {
   //   professional: `${ADDON_HOST}/stripe/redirect/${professional_token}`,
   //   business: `${ADDON_HOST}/stripe/redirect/${business_token}`,
   // }
-  
+  console.log(me)
   return me
+}
+
+function manageSubscrptoin () {
+  let exUser = userProperties.getProperty('exUser')
+  exUser = JSON.parse(exUser)
+  console.log(exUser)
+  let customer = exUser.sub.customer
+  console.log(customer)
+  let result = ParseServer.runCloudCode('billingportal', {customer})
+  console.log(result)
+  return result.result
 }
 
 /**
@@ -242,8 +274,74 @@ function getCookies () {
   // console.log(result.getAllHeaders())
 }
 
+/**
+ * 创建一个物流文件监听器，监听当前文档的所有单号，定时更新
+ */
+// function createTrackingMonitor () {
+//   let functionName = 'updateSheetTrackings'
+//   let sheetId = SpreadsheetApp.getActive().getId()
+//   let monitors = userProperties.getProperty('monitors')
+//   monitors = JSON.parse(monitors)
+//   // 如果当前文档已经有了监听器了，那么就不要监听了
+//   for( var i = 0; i < monitors.length; i++ ){
+//     let monitor = monitors[i]
+//     if(monitor.sheetId === sheetId){
+//       return
+//     }
+//   }
+//   // 创建监听器
+//   let tId = Trigger.createMinutesTrigger(1, functionName)
+//   console.log(tId)
+//   monitors.push({
+//     triggerId: tId,
+//     sheetId,
+//   })
+//   userProperties.setProperty('monitors', JSON.stringify(monitors))
+//   console.log(monitors)
+//   return monitors
+// }
 
+// function listMonitors () {
+//   let monitors = userProperties.getProperty('monitors')
+//   monitors = JSON.parse(monitors)
+//   console.log(monitors)
+// }
 
+// function clearMonitors () {
+//   userProperties.setProperty('monitors', JSON.stringify([]))
+// }
+
+// function updateSheetTrackings () {
+//   // console.log('updateSheetTrackings')
+//   let monitors = userProperties.getProperty('monitors')
+//   monitors = JSON.parse(monitors)
+//   console.log(monitors)
+// }
+
+/**
+ * 获得所有监听的文件
+ */
+function getAllSpreadsheets () {
+  let ms = Monitor.getAllMonitors()
+  console.log(ms)
+  return ms
+}
+
+function addSpreadsheetToMonitor () {
+  let fn = 'updateSheetTrackings'
+  let monitors = Monitor.createSheetMonitor(fn)
+  return monitors
+}
+
+/**
+ * 用户登出，删除所有登录信息
+ */
+function logout () {
+  userProperties.deleteProperty('exUser')
+  userProperties.deleteProperty('user')
+  userProperties.deleteProperty('setting')
+  return true
+}
 
 
 
