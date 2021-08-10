@@ -27,7 +27,7 @@ function openHelp() {
  */
 function doTrack (tracking_numbers) {
   // console.log(tracking_numbers)
-  tracking_numbers = ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
+  tracking_numbers = tracking_numbers ? tracking_numbers : ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
   let uniq = [...new Set(tracking_numbers)]
   // console.log(uniq)
   tracking_numbers = uniq
@@ -44,16 +44,16 @@ function doTrack (tracking_numbers) {
   // 本次需要搜索的单号（包含重复的）
   let search_trackikng_numbers = filter_result.result.search_trackings
   console.log(search_trackikng_numbers)
-
   // 搜索物流信息
   let trackings_result = af_batchTracking(search_trackikng_numbers)
   // 将信息插入到当前 sheet 中
   let spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
-  let sheet = spreadsheet.getActiveSheet()
+  let sheet = SpreadsheetApp.getActiveSheet()
   let params = {
     spreadsheet,
     sheet,
   }
+  // console.log(sheet.getSheetId())
   insertTrackingsToSheet(trackings_result, params)
   return filter_result.result
 }
@@ -153,16 +153,28 @@ function insertTrackingsToSheet (json, params) {
   let rows = params.rows
   // 
   let trackings = json.data.direct_trackings
+  // insert rows to sheets
+  let row_selected = 1
+  let cell = sheet.getCurrentCell()
+  if(cell) {
+    row_selected = cell.getRow()
+  }
+  let _mxc = sheet.getMaxColumns()
+  sheet.insertRows(row_selected, trackings.length)
+  sheet.getRange(row_selected, 1, trackings.length, _mxc)
+    .setBackground('#ffffff')
   // 
   for (let i = 0; i < trackings.length; i++) {
     let tracking = trackings[i].tracking
     let checkpoints = tracking.checkpoints
+    // 当前的状态 (Delivered - 送达) 
+    let latest_status = tracking.latest_status
     // inster text to cell
     let row
     if(rows) {
       row = rows[i]
     }else{
-      row = i + 1
+      row = i + row_selected
     }
     let column = 1
     // tracking_number
@@ -173,15 +185,15 @@ function insertTrackingsToSheet (json, params) {
     // courier
     column += 1
     insterTextToSheet(sheet, row, column, tracking.courier.name)
-    // service_type_name
-    column += 1
-    insterTextToSheet(sheet, row, column, tracking.service_type_name)
     // latest_status
     column += 1
     insterTextToSheet(sheet, row, column, tracking.latest_status)
     // delivery_days
     column += 1
     insterTextToSheet(sheet, row, column, `${tracking.delivery_days} Days`)
+    // service_type_name
+    column += 1
+    insterTextToSheet(sheet, row, column, tracking.service_type_name)
     // insert checkpoints to sheet
     if(checkpoints.length > 0) {
       column += 1
@@ -206,32 +218,21 @@ function insertTrackingsToSheet (json, params) {
 }
 
 function insertNoteToSheet (sheet, row, column, text) {
-  // let sheet
-  // if(sheetId) {
-
-  // }else{
-  //   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  // }
   let cell = sheet.getRange(row, column)
   cell.setNote(text)
 }
 
 function insterTextToSheet (sheet, row, column, text) {
-  // let sheet
-  // if(sheetId) {
-
-  // }else{
-  //   sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  // }
   let cell = sheet.getRange(row, column)
   let rich_text = SpreadsheetApp.newRichTextValue()
     .setText(text)
     .build()
   cell.setRichTextValue(rich_text)
-  // console.log(text)
+  let lc = sheet.getMaxColumns()
   if(text === 'Delivered') {
-    cell.setBackground(`#349d4f`) 
-    // cell.getRow().setBackground(`#349d4f`)
+    sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
+  }else{
+    // sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
   }
 }
 

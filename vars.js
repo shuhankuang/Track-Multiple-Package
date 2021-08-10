@@ -4,23 +4,25 @@ const APP_NAME = 'Track-Multiple-Packages-Addon' // Track-Multiple-Packages (Goo
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
 const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
 const VERSION = '1.0.0'
-// const MAX_PER_MONTH = 30 // 免费用户每月可以查询 30 条
-// const MAX_PER_MONTH_PRO = 500 // 专业用户每月可以查询 500 条
 const PLANS = {
   basic: {
     max: 30,
+    max_monitors_num: 1,
     name: 'basic',
   },
   standard: {
     max: 250,
+    max_monitors_num: 3,
     name: 'standard',
   },
   professional: {
     max: 500,
+    max_monitors_num: 5,
     name: 'professional'
   },
   business: {
     max: 1000,
+    max_monitors_num: 5,
     name: 'business'
   }
 }
@@ -60,3 +62,15 @@ if(!userProperties.getProperty('monitors')) {
 // 9374889675091115019951
 // UM740335899US
 // 9405511108435891385343
+// UA930012758US
+
+
+
+
+
+
+
+
+
+
+//end

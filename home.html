@@ -70,6 +70,10 @@
 			padding-inline-start: 0;
 		}
 
+    textarea {
+      border-radius: 2px !important;
+    }
+
 		ul>li {
 			display: inline;
 			padding: 4px;
@@ -162,8 +166,7 @@
             </button>
 					</p>
 					<p>
-						{{logs}}
-            <button @click="logout" class="action">LOGOUT</button>
+            <!-- <button @click="logout" class="action">LOGOUT</button> -->
 					</p>
 				</div>
 			</div>
@@ -171,7 +174,7 @@
       <div v-if="page==='monitors'">
         <p>
           <i class="fas fa-info-circle"></i>
-          Add the current spreadsheet to monitor, which will automatically update the trackings information every <b class="error">2</b> hours.
+          Add the current spreadsheet to monitor, which will automatically update all the trackings information every <b class="error">2</b> hours.
         </p>
         <hr>
         <p>
@@ -183,14 +186,15 @@
         </p>
         <hr>
         <div v-if="sheets.length > 0">
-          <p>
+          <p style="padding-right: 4px;">
             <b>Spreadsheets:</b>
+            <span style="float: right" class="grey">Total: {{sheets.length}}</span>
           </p>
           <div v-for="(sheet, index) in sheets" class="box">
             <i class="fas fa-sync-alt"></i>
             <a :href="`https://docs.google.com/spreadsheets/d/${sheet.sheetId}`" target="blank">{{sheet.sheetId}}</a>
             <p style="text-align: right; margin-bottom: 0px;">
-              <button @click="removeSheetMonitor(sheet.sheetId)" class="create">
+              <button :disabled="delMoIsLoading" @click="removeSheetMonitor(sheet.sheetId)" class="create">
               <i class="fas fa-trash"></i>
               Remove</button>
             </p>
@@ -405,7 +409,7 @@
       el: "#app",
       data: {
         isLoading: false,
-        page: 'monitors',
+        page: 'home',
         logs: '',
         nums: '',
         sheets: [],
@@ -414,6 +418,7 @@
         state: undefined,
         subIsLoading: false, // 订阅管理
         addToMoIsLoading: false, // 添加监听
+        delMoIsLoading: false, // 删除监听
       },
       created() {
         let _this = this
@@ -480,9 +485,13 @@
 
         removeSheetMonitor (sheetId) {
           let _this = this
+          this.delMoIsLoading = true
           serverRun('removeSpreadsheetMonitor', sheetId, function(result){
             console.log(result)
+            _this.delMoIsLoading = false
             _this.sheets = result
+          }, function(err){
+            _this.delMoIsLoading = false
           })
         },
 

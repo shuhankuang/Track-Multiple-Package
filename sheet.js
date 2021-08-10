@@ -54,6 +54,7 @@ function updateOneSpreadsheet_ (id) {
       rows,
     }
     console.log(tracking_numbers, params)
+    Utilities.sleep(1500)
     monitorDoTrack(tracking_numbers, params)
     // console.log(tracking_numbers)
     // console.log(rows)
