@@ -191,8 +191,10 @@
             <span style="float: right" class="grey">Total: {{sheets.length}}</span>
           </p>
           <div v-for="(sheet, index) in sheets" class="box">
-            <i class="fas fa-sync-alt"></i>
-            <a :href="`https://docs.google.com/spreadsheets/d/${sheet.sheetId}`" target="blank">{{sheet.sheetId}}</a>
+            <i class="fas fa-sync-alt fa-spinner fa-spin" style="color: #349d4f"></i>
+            <a :href="`https://docs.google.com/spreadsheets/d/${sheet.sheetId}`" target="blank">{{sheet.name}} 
+            <span style="font-size: 11px;">({{sheet.sheetId}})</span>
+            </a>
             <p style="text-align: right; margin-bottom: 0px;">
               <button :disabled="delMoIsLoading" @click="removeSheetMonitor(sheet.sheetId)" class="create">
               <i class="fas fa-trash"></i>
@@ -271,7 +273,8 @@
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">250</b> tracking numbers per month</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+							<!-- <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1</b> monitor to auto update the tracking information</span> -->
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support <b class="error">2</b> documents to auto update the tracking information</span>
 						</p>
 					</div>
 					<!-- pro -->
@@ -299,7 +302,8 @@
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">500</b> tracking numbers per month</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+              <!-- <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1</b> monitor to auto update the tracking information</span> -->
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support <b class="error">3</b> documents to auto update the tracking information</span>
 						</p>
 					</div>
 					<!-- business -->
@@ -327,7 +331,8 @@
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1000</b> tracking numbers per month</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+              <!-- <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1</b> monitor to auto update the tracking information</span> -->
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support <b class="error">5</b> documents to auto update the tracking information</span>
 						</p>
 					</div>
 					<!-- basic -->
@@ -344,7 +349,8 @@
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">30</b> tracking numbers per month</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support 790+ carriers</span><br>
 							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>Automatically detect carrier</span><br>
-							<span><i class="fas fa-check-circle" style="color: #44bf86"></i>One-click to insert tracking information into draft</span>
+              <!-- <span><i class="fas fa-check-circle" style="color: #44bf86"></i><b class="error">1</b> monitor to auto update the tracking information</span> -->
+              <span><i class="fas fa-check-circle" style="color: #44bf86"></i>Support <b class="error">1</b> document to auto update the tracking information</span>
 						</p>
 					</div>
 					<!--  -->
@@ -381,7 +387,7 @@
 			</div>
 			<!-- footer -->
 			<div style="text-align: center; margin-top: 20px;">
-				<p class="grey">&copy; 2021 SheetTrackr.</p>
+				<p class="grey">&copy; 2021 <a href="https://sheettrackr.workaddons.com" target="_blank">SheetTrackr</a>.</p>
 			</div>
 		</div>
 	</div>

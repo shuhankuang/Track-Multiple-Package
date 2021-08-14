@@ -18,22 +18,23 @@ class Klass_User {
     let username = this.currentUserEmail
     let password = this.currentUserId
     // console.log(username, password)
-    // console.log('try to sign in')
+    console.log('try to sign in')
     user = ParseServer.signIn(username, password)
-    console.log(user)
+    
     if(user && user.sessionToken) {
-      // console.log('sign in done')
+      console.log('sign in done')
       userProperties.setProperty('user', JSON.stringify(user))
       userProperties.setProperty('token', JSON.stringify(user.sessionToken))
       return user
     }
+    console.log(user)
     // no user
     if(user.code === 101) {
       // console.log('sign up a new user')
       user = ParseServer.signUp(username, password)
       userProperties.setProperty('user', JSON.stringify(user))
     }
-    // console.log(user)
+    console.log(user)
     return user
   }
 

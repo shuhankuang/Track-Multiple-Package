@@ -1,6 +1,6 @@
 // 默认的参数
 const PREFIX = 'ADDON_TRACK' // 标记符号，若用统一的用户管理后台，那么可以用此字符进行区分
-const APP_NAME = 'Track-Multiple-Packages-Addon' // Track-Multiple-Packages (Google Sheets Addon)
+const APP_NAME = 'SheetTrackr' // SheetTrackr (Google Sheets Addon)
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
 const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
 const VERSION = '1.0.0'

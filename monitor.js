@@ -23,6 +23,16 @@ class Klass_Monitor {
     }
     try{
       monitors = JSON.parse(monitors)
+      let sheets = []
+      for(let i = 0; i < monitors.length; i++) {
+        let mo = monitors[i]
+        let sheet = SpreadsheetApp.openById(mo.sheetId)
+        let name = sheet.getName()
+        mo.name = name
+        // console.log(name)
+        // sheets.push(sheet)
+      }
+      // console.log(sheets)
     }catch(e){
       return []
     }
