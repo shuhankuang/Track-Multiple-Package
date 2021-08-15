@@ -246,6 +246,19 @@ function manageSubscrptoin () {
   console.log(result)
   return result.result
 }
+
+function switchPlan (params) {
+  let plan = params && params.plan ? params.plan : 'professional'
+  let exUser = userProperties.getProperty('exUser')
+  exUser = JSON.parse(exUser)
+  if(exUser && exUser.sub){
+    let subId = exUser.sub.id
+    console.log(subId, plan)
+    let result = ParseServer.runCloudCode('switch_plan', {subId, plan})
+    return result
+  }
+  return false
+}
 /**
  * 测试 17track.net 的接口调用（可用隐私模式获取 cookies, 用 puppeeter 进行获取 cookies）
  */
@@ -278,6 +291,34 @@ function getAllSpreadsheets () {
 }
 
 function addSpreadsheetToMonitor () {
+  let exUser = userProperties.getProperty('exUser')
+  exUser = JSON.parse(exUser)
+  // console.log(exUser)
+  let plan = 'BASIC'
+  let max = 1
+  let count = Monitor.count()
+  // console.log(max, count)
+  // free
+  if(exUser && !exUser.sub) {
+
+  }
+  // pay
+  if(exUser && exUser.sub) {
+    plan = String(exUser.sub.plan.nickname.split('-')[1].trim()).toLocaleLowerCase()
+    max = PLANS[plan].max_monitors_num
+  }
+  console.log(`max: ${max}`)
+
+  if(count >= max) {
+    let str = max > 1 ? 's' : ''
+    showAlert({
+      title: `SheetTrackr: ${plan} PLAN`,
+      message: `You can only create ${max} monitor${str}.`
+    })
+    return false
+  }
+
+  // return false
   let fn = 'updateSheetTrackings'
   let monitors = Monitor.createSheetMonitor(fn)
   return monitors

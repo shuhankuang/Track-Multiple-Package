@@ -12,12 +12,12 @@ const PLANS = {
   },
   standard: {
     max: 250,
-    max_monitors_num: 3,
+    max_monitors_num: 2,
     name: 'standard',
   },
   professional: {
     max: 500,
-    max_monitors_num: 5,
+    max_monitors_num: 3,
     name: 'professional'
   },
   business: {

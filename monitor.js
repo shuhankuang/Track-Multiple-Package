@@ -14,6 +14,21 @@ class Klass_Monitor {
     }
   }
 
+  count () {
+    let monitors = userProperties.getProperty('monitors')
+    console.log(monitors)
+    if(!monitors){
+      return 0
+    }else {
+      try{
+        monitors = JSON.parse(monitors)
+        return monitors.length
+      }catch {
+        return 0
+      }
+    }
+  }
+
   getAllMonitors () {
     let monitors = userProperties.getProperty('monitors')
     // console.log(monitors)
@@ -48,6 +63,10 @@ class Klass_Monitor {
     for( var i = 0; i < monitors.length; i++ ){
       let monitor = monitors[i]
       if(monitor.sheetId === sheetId){
+        showAlert({
+          title: 'SheetTrack',
+          message: 'Can not create duplicate monitor for the current document.'
+        })
         return monitors
       }
     }

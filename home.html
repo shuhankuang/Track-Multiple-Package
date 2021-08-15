@@ -223,7 +223,7 @@
 					answer at our evergrowing FAQs page.
 					<br>
 					<br>
-					<button style="width: 100%;">FAQs Page</button>
+					<button @click="openURL('https://sheettrackr.workaddons.com/faqs')" style="width: 100%;">FAQs Page</button>
 					<br>
         </p>
 					<hr>
@@ -265,7 +265,7 @@
 							</p>
 							<p>
 								<input v-model="accept" type="checkbox" id="terms">
-								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+								<label for="terms">I accept <a @click="openURL('https://sheettrackr.workaddons.com/terms')" target="_blank">Terms of Service</a></label>
 							</p>
 						</p>
 						<hr>
@@ -294,7 +294,7 @@
 							</p>
 							<p>
 								<input v-model="accept" type="checkbox" id="terms">
-								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+								<label for="terms">I accept <a @click="openURL('https://sheettrackr.workaddons.com/terms')" target="_blank">Terms of Service</a></label>
 							</p>
 						</p>
 						<hr>
@@ -323,7 +323,7 @@
 							</p>
 							<p>
 								<input v-model="accept" type="checkbox" id="terms">
-								<label for="terms">I accept <a href="" target="_blank">Terms of Service</a></label>
+								<label for="terms">I accept <a @click="openURL('https://sheettrackr.workaddons.com/terms')" target="_blank">Terms of Service</a></label>
 							</p>
 						</p>
 						<hr>
@@ -383,6 +383,20 @@
               <i class="fas fa-spin fa-spinner"></i>
             </button>
 					</p>
+          <hr>
+          <p>You can upgrade or downgrade your plan.</p>
+          <div class="block form-group">
+            <!-- <label for="select">Select</label> -->
+            <select v-model="switchPlan" style="width: 100%;">
+              <option>STANDARD</option>
+              <option>PROFESSIONAL</option>
+              <option>BUSINESS</option>
+            </select>
+            <p>
+              <button v-if="!isSwitching" @click="switchToPlan" :disabled="switchPlan === state.plan" class="action" style="width: 100%;"><i class="fas fa-exchange-alt"></i>Submit</button>
+              <button v-if="isSwitching" class="action" disabled style="width: 100%;"><i class="fas fa-spin fa-spinner"></i></button>
+            </p>
+          </div>
 				</div>
 			</div>
 			<!-- footer -->
@@ -425,23 +439,16 @@
         subIsLoading: false, // 订阅管理
         addToMoIsLoading: false, // 添加监听
         delMoIsLoading: false, // 删除监听
+        switchPlan: undefined, // 用户需要切换的订阅
+        isSwitching: false, // 正在改变订阅
       },
       created() {
         let _this = this
         let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
         // let test = '9405511108400894874262'
         this.nums = test
-        // get current user info
-        serverRun('doGetMe', {}, function(result){
-          _this.me = result
-          _this.state = result.state
-          document.querySelector("#loader").style.visibility = "hidden";
-        }, function(){})
-        // get the speadsheet
-        serverRun('getAllSpreadsheets', {}, function(result){
-          console.log(result)
-          _this.sheets = result
-        })
+        this.updateUserInfo()
+        this.updateMonitors()
       },
       methods: {
         gotoPage (page) {
@@ -458,6 +465,26 @@
           })
         },
 
+        updateUserInfo () {
+          let _this = this
+          // get current user info
+          serverRun('doGetMe', {}, function(result){
+            _this.me = result
+            _this.state = result.state
+            _this.switchPlan = _this.state.plan
+            console.log(result)
+            document.querySelector("#loader").style.visibility = "hidden";
+          }, function(){})
+        },
+
+        updateMonitors () {
+          // get the speadsheet
+          serverRun('getAllSpreadsheets', {}, function(result){
+            console.log(result)
+            _this.sheets = result
+          })
+        },
+
         gotoSubscribePage (plan) {
           if(!this.accept) {
             this.showAlert()
@@ -470,11 +497,16 @@
         gotoSubscriptionManagePage () {
           let _this = this
           this.subIsLoading = true
+          this.isSwitching = true
           serverRun('manageSubscrptoin', {}, function(result){
             _this.subIsLoading = false
+            _this.isSwitching = false
             let url = result.url
             window.open(url)
-          }, function(err){})
+          }, function(err){
+            _this.subIsLoading = false
+            _this.isSwitching = false
+          })
         },
 
         addToMonitor () {
@@ -483,9 +515,28 @@
           serverRun('addSpreadsheetToMonitor', {}, function(result){
             // console.log(result)
             _this.addToMoIsLoading = false
-            _this.sheets = result
+            if(result){
+              _this.sheets = result
+            }
           }, function(err){
             _this.addToMoIsLoading = false
+          })
+        },
+
+        switchToPlan () {
+          let _this = this
+          let plan = this.switchPlan.toLocaleLowerCase()
+          console.log(plan)
+          this.subIsLoading = true
+          this.isSwitching = true
+          serverRun('switchPlan', {plan}, function(result){
+            _this.subIsLoading = false
+            _this.isSwitching = false
+            _this.updateUserInfo()
+            // _this.updateMonitors()
+          }, function(err){
+            _this.subIsLoading = false
+            _this.isSwitching = false
           })
         },
 
