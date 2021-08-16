@@ -10,7 +10,7 @@ class Klass_Trigger {
     let t = ScriptApp.newTrigger(funcName)
       // .forSpreadsheet(doc)
       .timeBased()
-      .everyMinutes(hour * 60)
+      .everyHours(hour)
       .create()
     return t.getUniqueId()
   }

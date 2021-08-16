@@ -42,9 +42,13 @@ function af_singleTracking (tracking_number, courier) {
  * @param tracking_numbers 数组
  */
 function af_batchTracking (tracking_numbers) {
+  console.log(tracking_numbers)
   tracking_numbers =  tracking_numbers ? tracking_numbers : ['9361289738009091755413', '9374889675091115019951']
   let url = `${AF_HOST_V2}/direct-trackings/batch`
   console.log(url)
+  if(tracking_numbers.length < 1) {
+    return false
+  }
   let direct_trackings = []
   for(let i = 0; i < tracking_numbers.length; i++) {
     let num = tracking_numbers[i]
@@ -57,6 +61,7 @@ function af_batchTracking (tracking_numbers) {
     slugs: [],
     direct_trackings,
   }
+  console.log(formData)
   let opts = {
     method: 'post',
     contentType: 'application/json',
@@ -66,6 +71,7 @@ function af_batchTracking (tracking_numbers) {
     payload: JSON.stringify(formData)
   }
   // console.log(opts)
+  // return
   let response = UrlFetchApp.fetch(url, opts)
   let json = JSON.parse(response.getContentText())
   console.log(json)

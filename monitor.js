@@ -71,7 +71,7 @@ class Klass_Monitor {
       }
     }
     // 创建监听器
-    let tId = Trigger.createMinutesTrigger(1, funcName)
+    let tId = Trigger.createHourTrigger(1, funcName)
     console.log(tId)
     monitors.push({
       triggerId: tId,

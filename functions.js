@@ -63,6 +63,9 @@ function doTrack (tracking_numbers) {
  */
 function monitorDoTrack (tracking_numbers, params) {
   // tracking_numbers = ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
+  if(tracking_numbers.length < 1) {
+    return false
+  }
   let spreadsheet = params.spreadsheet
   let sheet = params.sheet
   let rows = params.rows
@@ -255,6 +258,7 @@ function switchPlan (params) {
     let subId = exUser.sub.id
     console.log(subId, plan)
     let result = ParseServer.runCloudCode('switch_plan', {subId, plan})
+    openSidebar()
     return result
   }
   return false
@@ -331,7 +335,7 @@ function removeSpreadsheetMonitor (sheetId) {
 
 function updateSheetTrackings () {
   // console.log('run monitor')
-  // updateAllSpreadsheets()
+  updateAllSpreadsheets()
 }
 
 /**

@@ -174,7 +174,7 @@
       <div v-if="page==='monitors'">
         <p>
           <i class="fas fa-info-circle"></i>
-          Add the current spreadsheet to monitor, which will automatically update all the trackings information every <b class="error">2</b> hours.
+          Add the current spreadsheet to monitor, which will automatically update all the trackings information every <b class="error">1</b> hour.
         </p>
         <hr>
         <p>
@@ -478,6 +478,7 @@
         },
 
         updateMonitors () {
+          let _this = this
           // get the speadsheet
           serverRun('getAllSpreadsheets', {}, function(result){
             console.log(result)
@@ -532,7 +533,8 @@
           serverRun('switchPlan', {plan}, function(result){
             _this.subIsLoading = false
             _this.isSwitching = false
-            _this.updateUserInfo()
+            // _this.updateUserInfo()
+            // window.locatoin.reload()
             // _this.updateMonitors()
           }, function(err){
             _this.subIsLoading = false
