@@ -4,6 +4,7 @@ const APP_NAME = 'SheetTrackr' // SheetTrackr (Google Sheets Addon)
 const COUNTS = [0, 1, 3, 5, 10] // 插入物流信息的条数
 const MAX_HISTORY_NUM = 3 // 显示的历史数据，可以本地显示多少条历史数据
 const VERSION = '1.0.0'
+const MAX_TRACKING_NUMBER = 50
 const PLANS = {
   basic: {
     max: 30,

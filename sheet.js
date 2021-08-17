@@ -34,7 +34,7 @@ function updateOneSpreadsheet_ (id) {
     let sheet = sheets[i]
     let last_row = sheet.getLastRow()
     // 
-    let elements = [] // 根据物流服务商分类
+    let elements = [] // 格式化的元素对象
     // 如果是空白的表单，那么就跳过
     if(last_row < 1) {
       continue
@@ -73,13 +73,13 @@ function updateOneSpreadsheet_ (id) {
         }else{
           is_default_courier = false
         }
-        console.log(`${selected_courier} : ${default_courier} ,is_default_courier ${is_default_courier}`)
+        // console.log(`${selected_courier} : ${default_courier} ,is_default_courier ${is_default_courier}`)
       } catch(e) {}
       let _text = decipher(APP_NAME)(key)
       let slat = _text.split('|')
       // 判断标记中的 key 是否真确，单号与用户id
       let isOK = tNumber === slat[0] && uid === slat[1]
-      console.log(tNumber, slat[0])
+      // console.log(tNumber, slat[0])
       // console.log(isOK)
       if(isOK) {
         tracking_numbers.push(tNumber)
@@ -92,16 +92,15 @@ function updateOneSpreadsheet_ (id) {
         })
       }
     }
-
+    // 根据物流服务商分类
     let grouped_by_couriers = Object.create(null)
     elements.forEach(function(e) {
       grouped_by_couriers[e.courier] = grouped_by_couriers[e.courier] || []
       grouped_by_couriers[e.courier].push(e)
     })
-
+    // 区分默认与用户选择的
     let default_courier_trackings = [] // 默认物流服务商的订单
     let selected_courier_trackings = [] // 用户选择的物流服务商订单
-
     elements.forEach(function(e) {
       if(e.is_default_courier) {
         default_courier_trackings.push(e)
@@ -109,7 +108,14 @@ function updateOneSpreadsheet_ (id) {
         selected_courier_trackings.push(e)
       }
     })
-
+    // 区分自己选择的的物流服务服务商（分组，分类，方便后续处理）
+    let selected_grouped_by_couriers = Object.create(null)
+    selected_courier_trackings.forEach(function(e) {
+      selected_grouped_by_couriers[e.courier] = selected_grouped_by_couriers[e.courier] || []
+      selected_grouped_by_couriers[e.courier].push(e)
+    })
+    // 
+    // console.log(selected_grouped_by_couriers)
     let params = {
       spreadsheet,
       sheet,
@@ -118,6 +124,7 @@ function updateOneSpreadsheet_ (id) {
       grouped_by_couriers,
       default_courier_trackings,
       selected_courier_trackings,
+      selected_grouped_by_couriers,
       tracking_numbers,
     }
     // console.log(params)

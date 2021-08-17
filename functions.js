@@ -67,23 +67,78 @@ function monitorDoTrack (params) {
   if(tracking_numbers.length < 1) {
     return false
   }
+  // let spreadsheet = params.spreadsheet
+  // let sheet = params.sheet
+  // let rows = params.rows
+  // let tracking_objects = params.tracking_objects
+  // let default_courier_trackings = params.default_courier_trackings
+  // let selected_courier_trackings = params.selected_courier_trackings
+  // let selected_grouped_by_couriers = params.selected_grouped_by_couriers
+  // params.isMonitor = true
+
+  // // 排除重复
+  // let uniq = [...new Set(tracking_numbers)]
+  // tracking_numbers = uniq
+
+  // 搜索物流信息
+  // let trackings_result = af_batchTracking(tracking_numbers)
+  // // 将信息插入到 sheet 中
+  // insertTrackingsToSheet(trackings_result, params)
+  // return trackings_result
+  doBatchTrackingForSheet_(params)
+}
+
+/**
+ * 针对 sheet 的参数进行独立的处理, 主要针对 Monitor 的操作
+ * @param {Object} params 参考 sheet.gs 里面返回的参数
+ */
+function doBatchTrackingForSheet_ (params) {
   let spreadsheet = params.spreadsheet
   let sheet = params.sheet
   let rows = params.rows
   let tracking_objects = params.tracking_objects
   let default_courier_trackings = params.default_courier_trackings
   let selected_courier_trackings = params.selected_courier_trackings
-  params.isMonitor = true
-
+  let selected_grouped_by_couriers = params.selected_grouped_by_couriers
+  let tracking_numbers = params.tracking_numbers
+  // params.isMonitor = true
   // 排除重复
   let uniq = [...new Set(tracking_numbers)]
   tracking_numbers = uniq
+  let max = MAX_TRACKING_NUMBER
 
-  // 搜索物流信息
-  let trackings_result = af_batchTracking(tracking_numbers)
-  // 将信息插入到 sheet 中
-  insertTrackingsToSheet(trackings_result, params)
-  return trackings_result
+  let _track_func = function(tracking_objs, isSelectedCourier = false, slugs = []) {
+    let chuck = chuckArray(tracking_objs, max)
+    for (let i = 0; i < chuck.length; i++) {
+      let eles = chuck[i]
+      let _nums = []
+      let _rows = []
+      eles.map(function(e){
+        _nums.push(e.number)
+        _rows.push(e.row)
+      })
+      // 搜索物流信息
+      let trackings_result = af_batchTracking(_nums, slugs)
+      // 将信息插入到 sheet 中
+      let _params  = {
+        spreadsheet,
+        sheet,
+        rows: _rows,
+        isMonitor: true,
+        isSelectedCourier,
+      }
+      // console.log(_params)
+      insertTrackingsToSheet(trackings_result, _params)
+    }
+  }
+  // 用户选择的物流服务商订单
+  for( key in selected_grouped_by_couriers) {
+    let eles = selected_grouped_by_couriers[key]
+    let courier = String(key).toLocaleLowerCase()
+    _track_func(eles, true, [courier])
+  }
+  // 默认物流服务商的订单
+  _track_func(default_courier_trackings, false, [])
 }
 
 /**
@@ -147,6 +202,7 @@ function insertTrackingsToSheet (json, params) {
   let sheet = params.sheet
   let rows = params.rows
   let isMonitor = params.isMonitor // 是否 monitor 的监听，如果是，那么就不创建新的行，只更新当前。
+  let isSelectedCourier = params.isSelectedCourier
   // 
   let trackings = json.data.direct_trackings
   let row_selected = 1
@@ -185,7 +241,9 @@ function insertTrackingsToSheet (json, params) {
     column += 1
     // insterTextToSheet(sheet, row, column, tracking.courier.name)
     // detected_slugs
-    insertDataValidationToSheet(sheet, row, column, root.detected_slugs)
+    if(!isSelectedCourier) {
+      insertDataValidationToSheet(sheet, row, column, root.detected_slugs)
+    }
     // latest_status
     column += 1
     insterTextToSheet(sheet, row, column, tracking.latest_status)
@@ -215,6 +273,8 @@ function insertTrackingsToSheet (json, params) {
     // courier_tracking_link
     column += 1
     insterTextToSheet(sheet, row, column, tracking.courier_tracking_link || tracking.courier_redirect_link)
+    // set background color
+    setCellBackgroundColor(sheet, row, undefined, tracking.latest_status)
   }
 }
 /**
@@ -238,14 +298,23 @@ function insterTextToSheet (sheet, row, column, text) {
       .setText(text + '')
       .build()
     cell.setRichTextValue(rich_text)
-    let lc = sheet.getMaxColumns()
-    if(text === 'Delivered') {
-      sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
-    }else{
-      // sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
-    }
+    // let lc = sheet.getMaxColumns()
+    // if(text === 'Delivered') {
+    //   sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
+    // }else{
+    //   sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
+    // }
   } catch(e) {
     console.log('Error: ' + e)
+  }
+}
+
+function setCellBackgroundColor (sheet, row, column, status) {
+  let lc = sheet.getMaxColumns()
+  if(status === 'Delivered') {
+    sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
+  }else{
+    sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
   }
 }
 /**

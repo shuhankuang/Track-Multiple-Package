@@ -93,3 +93,16 @@ function doGetMe () {
   console.log(me)
   return me
 }
+
+
+function chuckArray (arr, chunkSize) {
+  if (chunkSize <= 0) {
+    throw "Invalid chunk size"
+  }
+  let R = []
+  let len = Math.ceil(arr.length / chunkSize)
+  for (let i = 0; i < len; i++) {
+    R.push(arr.slice(i * chunkSize, (i + 1) * chunkSize))
+  }
+  return R
+}
