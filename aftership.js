@@ -39,9 +39,10 @@ function af_singleTracking (tracking_number, courier) {
 
 /**
  * 批量获取数据
- * @param tracking_numbers 数组
+ * @param {Array} tracking_numbers 数组
+ * @param {Array} slugs 物流服务器商，有此参数表示单号独立
  */
-function af_batchTracking (tracking_numbers) {
+function af_batchTracking (tracking_numbers, slugs = []) {
   console.log(tracking_numbers)
   tracking_numbers =  tracking_numbers ? tracking_numbers : ['9361289738009091755413', '9374889675091115019951']
   let url = `${AF_HOST_V2}/direct-trackings/batch`
@@ -58,7 +59,7 @@ function af_batchTracking (tracking_numbers) {
     })
   }
   let formData = {
-    slugs: [],
+    slugs: slugs,
     direct_trackings,
   }
   console.log(formData)

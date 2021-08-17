@@ -33,12 +33,12 @@ function doTrack (tracking_numbers) {
   tracking_numbers = uniq
   // 过滤订单，排除重复的
   let filter_result = filterTrackingNumbers(tracking_numbers)
-  console.log(filter_result)
+  // console.log(filter_result)
   // 获得新的订单号
   let new_trackings = filter_result.result.new_trackings
   // 记录新的订单号
   let insert_result = insertNewTrackingNumberToUser(new_trackings)
-  console.log(insert_result)
+  // console.log(insert_result)
   // 配对单号与数据库 ID
 
   // 本次需要搜索的单号（包含重复的）
@@ -61,37 +61,29 @@ function doTrack (tracking_numbers) {
 /**
  * 定时器触发的更新
  */
-function monitorDoTrack (tracking_numbers, params) {
+function monitorDoTrack (params) {
   // tracking_numbers = ['9361289738009091755413', '9405511108400894874262', 'UM740335899US', 'UA938472260US', '9374889675091115019951', '9405511108435891385343', '9405511108400894874262', '9405511108400894874262']
+  let tracking_numbers = params.tracking_numbers
   if(tracking_numbers.length < 1) {
     return false
   }
   let spreadsheet = params.spreadsheet
   let sheet = params.sheet
   let rows = params.rows
+  let tracking_objects = params.tracking_objects
+  let default_courier_trackings = params.default_courier_trackings
+  let selected_courier_trackings = params.selected_courier_trackings
+  params.isMonitor = true
 
+  // 排除重复
   let uniq = [...new Set(tracking_numbers)]
-  // console.log(uniq)
   tracking_numbers = uniq
-  // 过滤订单，排除重复的
-  let filter_result = filterTrackingNumbers(tracking_numbers)
-  console.log(filter_result)
-  // 获得新的订单号
-  let new_trackings = filter_result.result.new_trackings
-  // 记录新的订单号
-  let insert_result = insertNewTrackingNumberToUser(new_trackings)
-  console.log(insert_result)
-  // 配对单号与数据库 ID
-
-  // 本次需要搜索的单号（包含重复的）
-  let search_trackikng_numbers = filter_result.result.search_trackings
-  console.log(search_trackikng_numbers)
 
   // 搜索物流信息
-  let trackings_result = af_batchTracking(search_trackikng_numbers)
+  let trackings_result = af_batchTracking(tracking_numbers)
   // 将信息插入到 sheet 中
   insertTrackingsToSheet(trackings_result, params)
-  return filter_result.result
+  return trackings_result
 }
 
 /**
@@ -145,7 +137,7 @@ function fetchUserRemaining () {
 /**
  * 将物流内容插入的表单里
  * @param {JSON} json  返回的物流数据
- * @param {object} params {spreadsheetId, sheetId, rows} 物流单号对应的行，用于 Monitor 的更新
+ * @param {object} params {spreadsheetId, sheetId, rows, isMonitor} 物流单号对应的行，用于 Monitor 的更新
  */
 function insertTrackingsToSheet (json, params) {
   let me = User.me()
@@ -154,20 +146,24 @@ function insertTrackingsToSheet (json, params) {
   let spreadsheet = params.spreadsheet
   let sheet = params.sheet
   let rows = params.rows
+  let isMonitor = params.isMonitor // 是否 monitor 的监听，如果是，那么就不创建新的行，只更新当前。
   // 
   let trackings = json.data.direct_trackings
-  // insert rows to sheets
   let row_selected = 1
   let cell = sheet.getCurrentCell()
   if(cell) {
     row_selected = cell.getRow()
   }
-  let _mxc = sheet.getMaxColumns()
-  sheet.insertRows(row_selected, trackings.length)
-  sheet.getRange(row_selected, 1, trackings.length, _mxc)
-    .setBackground('#ffffff')
-  // 
+  // insert rows to sheets
+  if(!isMonitor){
+    let _mxc = sheet.getMaxColumns()
+    sheet.insertRows(row_selected, trackings.length)
+    sheet.getRange(row_selected, 1, trackings.length, _mxc)
+      .setBackground('#ffffff')
+  }
+
   for (let i = 0; i < trackings.length; i++) {
+    let root = trackings[i]
     let tracking = trackings[i].tracking
     let checkpoints = tracking.checkpoints
     // 当前的状态 (Delivered - 送达) 
@@ -181,13 +177,15 @@ function insertTrackingsToSheet (json, params) {
     }
     let column = 1
     // tracking_number
-    insterTextToSheet(sheet, row, column, tracking.tracking_number)
+    insterTextToSheet(sheet, row, column, tracking.tracking_number + '')
     // 加密字符，用于判断是否合法的单号，合法就可以进行自动更新
     const _match_key = cipher(APP_NAME)(`${tracking.tracking_number}|${uid}`)
     insertNoteToSheet(sheet, row, column, `TRACKR#${_match_key}`)
     // courier
     column += 1
-    insterTextToSheet(sheet, row, column, tracking.courier.name)
+    // insterTextToSheet(sheet, row, column, tracking.courier.name)
+    // detected_slugs
+    insertDataValidationToSheet(sheet, row, column, root.detected_slugs)
     // latest_status
     column += 1
     insterTextToSheet(sheet, row, column, tracking.latest_status)
@@ -198,8 +196,8 @@ function insertTrackingsToSheet (json, params) {
     column += 1
     insterTextToSheet(sheet, row, column, tracking.service_type_name)
     // insert checkpoints to sheet
+    column += 1
     if(checkpoints.length > 0) {
-      column += 1
       checkpoints.reverse()
       // insert all the checkpoints
       let _note_text = ''
@@ -219,34 +217,63 @@ function insertTrackingsToSheet (json, params) {
     insterTextToSheet(sheet, row, column, tracking.courier_tracking_link || tracking.courier_redirect_link)
   }
 }
-
+/**
+ * 插入笔记内容
+ */
 function insertNoteToSheet (sheet, row, column, text) {
   let cell = sheet.getRange(row, column)
   cell.setNote(text)
 }
-
+/**
+ * 插入表格内容
+ */
 function insterTextToSheet (sheet, row, column, text) {
+  // console.log(row, column)
   let cell = sheet.getRange(row, column)
-  let rich_text = SpreadsheetApp.newRichTextValue()
-    .setText(text)
-    .build()
-  cell.setRichTextValue(rich_text)
-  let lc = sheet.getMaxColumns()
-  if(text === 'Delivered') {
-    sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
-  }else{
-    // sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
+  try{
+    if(!text) {
+      text = ''
+    }
+    let rich_text = SpreadsheetApp.newRichTextValue()
+      .setText(text + '')
+      .build()
+    cell.setRichTextValue(rich_text)
+    let lc = sheet.getMaxColumns()
+    if(text === 'Delivered') {
+      sheet.getRange(row, 1, 1, lc).setBackground('#b6df95')
+    }else{
+      // sheet.getRange(row, 1, 1, lc).setBackground('#ffffff')
+    }
+  } catch(e) {
+    console.log('Error: ' + e)
   }
+}
+/**
+ * 插入下来列表导指定 cell
+ */
+function insertDataValidationToSheet (sheet, row, column, list) {
+  let cell = sheet.getRange(row, column)
+  console.log(list)
+  let _list = []
+  list.map(o => {
+    _list.push(String(o).toLocaleUpperCase())
+  })
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(_list)
+    .build()
+  
+  cell.setDataValidation(rule)
+  cell.setValue(_list[0])
 }
 
 function manageSubscrptoin () {
   let exUser = userProperties.getProperty('exUser')
   exUser = JSON.parse(exUser)
-  console.log(exUser)
+  // console.log(exUser)
   let customer = exUser.sub.customer
-  console.log(customer)
+  // console.log(customer)
   let result = ParseServer.runCloudCode('billingportal', {customer})
-  console.log(result)
+  // console.log(result)
   return result.result
 }
 
@@ -256,7 +283,7 @@ function switchPlan (params) {
   exUser = JSON.parse(exUser)
   if(exUser && exUser.sub){
     let subId = exUser.sub.id
-    console.log(subId, plan)
+    // console.log(subId, plan)
     let result = ParseServer.runCloudCode('switch_plan', {subId, plan})
     openSidebar()
     return result
@@ -281,7 +308,7 @@ function getCookies () {
   }
   let result = UrlFetchApp.fetch(url, opts)
   // console.log(result)
-  console.log(result.getContentText())
+  // console.log(result.getContentText())
   // console.log(result.getAllHeaders())
 }
 
@@ -290,7 +317,7 @@ function getCookies () {
  */
 function getAllSpreadsheets () {
   let ms = Monitor.getAllMonitors()
-  console.log(ms)
+  // console.log(ms)
   return ms
 }
 
@@ -336,6 +363,28 @@ function removeSpreadsheetMonitor (sheetId) {
 function updateSheetTrackings () {
   // console.log('run monitor')
   updateAllSpreadsheets()
+}
+
+/**
+ * 当改变物流商时，更新当前的单号信息
+ * @param {Object} e  onEdit(e)
+ */
+function updateOnCourierChange (e) {
+  let range = e.range
+  let oldValue = e.oldValue
+  let value = e.value
+  if(oldValue && value) {
+    let cell = SpreadsheetApp.getActiveSheet().getRange(range.rowStart, range.columnStart)
+    let tracking_num_cell = SpreadsheetApp.getActiveSheet().getRange(range.rowStart, range.columnStart - 1)
+    let tracking_num = tracking_num_cell.getValue()
+    let courier = String(cell.getValue()).toLocaleLowerCase()
+    // console.log(tracking_num, courier)
+    let tracking_numbers = [tracking_num]
+    // console.log(cell.getDataValidation().getCriteriaValues()[0])
+    // let tracking_numbers
+    // let params
+    // monitorDoTrack(tracking_numbers, params)
+  }
 }
 
 /**

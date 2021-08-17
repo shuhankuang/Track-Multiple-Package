@@ -155,7 +155,7 @@
 			<!-- home -->
 			<div v-if="page==='home'" style="">
 				<div class="form-group" style="margin-top: 10px;">
-					<textarea v-model="nums" style="width: 100%" id="trackings" rows="8" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
+					<textarea v-model="nums" style="width: 100%" id="trackings" rows="12" placeholder="Enter up to 50 tracking numbers, each per line." :disabled="isLoading"></textarea>
 					<label for="" style="font-size: 12px; color: grey;"><i class="fas fa-truck"></i> Auto-detect carriers</label>
 					<p>
 						<button v-if="!isLoading" @click="track" style="width: 100%" class="action">

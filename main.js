@@ -26,3 +26,7 @@ function onOpen(e) {
 //   let rowSelected = range.rowStart + ''
 //   // userProperties.setProperty('row_selected', rowSelected)
 // }
+
+function onEdit (e) {
+  updateOnCourierChange(e)
+}
