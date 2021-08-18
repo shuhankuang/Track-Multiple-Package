@@ -20,13 +20,12 @@ function onOpen(e) {
 /**
  * 当选择改变时候
  */
-// function onSelectionChange (e) {
-//   // let user = e.user
-//   let range = e.range
-//   let rowSelected = range.rowStart + ''
-//   // userProperties.setProperty('row_selected', rowSelected)
-// }
+function onSelectionChange (e) {
+  let range = e.range
+  let rowSelected = range.rowStart + ''
+  userProperties.setProperty('row_selected', rowSelected)
+}
 
 function onEdit (e) {
-  updateOnCourierChange(e)
+  // updateOnCourierChange(e)
 }

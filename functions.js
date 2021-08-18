@@ -67,24 +67,6 @@ function monitorDoTrack (params) {
   if(tracking_numbers.length < 1) {
     return false
   }
-  // let spreadsheet = params.spreadsheet
-  // let sheet = params.sheet
-  // let rows = params.rows
-  // let tracking_objects = params.tracking_objects
-  // let default_courier_trackings = params.default_courier_trackings
-  // let selected_courier_trackings = params.selected_courier_trackings
-  // let selected_grouped_by_couriers = params.selected_grouped_by_couriers
-  // params.isMonitor = true
-
-  // // 排除重复
-  // let uniq = [...new Set(tracking_numbers)]
-  // tracking_numbers = uniq
-
-  // 搜索物流信息
-  // let trackings_result = af_batchTracking(tracking_numbers)
-  // // 将信息插入到 sheet 中
-  // insertTrackingsToSheet(trackings_result, params)
-  // return trackings_result
   doBatchTrackingForSheet_(params)
 }
 
@@ -108,7 +90,10 @@ function doBatchTrackingForSheet_ (params) {
   let max = MAX_TRACKING_NUMBER
 
   let _track_func = function(tracking_objs, isSelectedCourier = false, slugs = []) {
+    console.log('--- tracking_objs ---')
+    console.log(tracking_objs)
     let chuck = chuckArray(tracking_objs, max)
+    console.log(chuck)
     for (let i = 0; i < chuck.length; i++) {
       let eles = chuck[i]
       let _nums = []
@@ -118,7 +103,9 @@ function doBatchTrackingForSheet_ (params) {
         _rows.push(e.row)
       })
       // 搜索物流信息
+      console.log(_nums, slugs)
       let trackings_result = af_batchTracking(_nums, slugs)
+      console.log(trackings_result)
       // 将信息插入到 sheet 中
       let _params  = {
         spreadsheet,
@@ -132,9 +119,11 @@ function doBatchTrackingForSheet_ (params) {
     }
   }
   // 用户选择的物流服务商订单
+  console.log(selected_grouped_by_couriers)
   for( key in selected_grouped_by_couriers) {
     let eles = selected_grouped_by_couriers[key]
     let courier = String(key).toLocaleLowerCase()
+    console.log(`search ${key} : ${courier}`)
     _track_func(eles, true, [courier])
   }
   // 默认物流服务商的订单
@@ -221,6 +210,9 @@ function insertTrackingsToSheet (json, params) {
   for (let i = 0; i < trackings.length; i++) {
     let root = trackings[i]
     let tracking = trackings[i].tracking
+    if(!tracking) {
+      continue
+    }
     let checkpoints = tracking.checkpoints
     // 当前的状态 (Delivered - 送达) 
     let latest_status = tracking.latest_status
@@ -435,6 +427,54 @@ function updateSheetTrackings () {
 }
 
 /**
+ * 更新当前用户选择的订单
+ */
+function updateSelectedRow () {
+  let me = User.me()
+  let uid = me.objectId
+  let row = userProperties.getProperty('row_selected')
+  let column = 1
+  let sheet = SpreadsheetApp.getActiveSheet()
+  let cell = SpreadsheetApp.getActiveSheet().getRange(row, column)
+  let courier_cell = SpreadsheetApp.getActiveSheet().getRange(row, column + 1)
+  let note = cell.getNote()
+  let tNumber = cell.getValue() + ''
+  console.log(note, tNumber)
+  let key = note.split('#')[1]
+  let _text = decipher(APP_NAME)(key)
+  let slat = _text.split('|')
+  // 判断标记中的 key 是否真确，单号与用户id
+  let isOK = tNumber === (slat[0] + '') && uid === slat[1]
+  if(isOK) {
+    // console.log('update information')
+    let courier = String(courier_cell.getValue()).toLocaleLowerCase()
+    let tracking_numbers = [tNumber]
+    // let tracking_numbers
+    let _obj = {}
+    _obj[courier] = [{
+      row: row,
+      isSelectedCourier: true,
+      number: tNumber,
+    }]
+    
+    let params = {
+      spreadsheet: undefined,
+      sheet,
+      rows: [row],
+      isMonitor: true,
+      tracking_numbers: tracking_numbers,
+      selected_grouped_by_couriers: _obj,
+      default_courier_trackings: [],
+    }
+    // console.log(params)
+
+    doBatchTrackingForSheet_(params)
+  }
+
+  return true
+}
+
+/**
  * 当改变物流商时，更新当前的单号信息
  * @param {Object} e  onEdit(e)
  */
@@ -443,16 +483,36 @@ function updateOnCourierChange (e) {
   let oldValue = e.oldValue
   let value = e.value
   if(oldValue && value) {
-    let cell = SpreadsheetApp.getActiveSheet().getRange(range.rowStart, range.columnStart)
-    let tracking_num_cell = SpreadsheetApp.getActiveSheet().getRange(range.rowStart, range.columnStart - 1)
+    let sheet = e.source
+    console.log(JSON.stringify(e.source))
+    // let sheet = SpreadsheetApp.setActiveSheet().get
+    let cell = sheet.getActiveSheet().getRange(range.rowStart, range.columnStart)
+    let tracking_num_cell = sheet.getActiveSheet().getRange(range.rowStart, range.columnStart - 1)
     let tracking_num = tracking_num_cell.getValue()
     let courier = String(cell.getValue()).toLocaleLowerCase()
     // console.log(tracking_num, courier)
     let tracking_numbers = [tracking_num]
     // console.log(cell.getDataValidation().getCriteriaValues()[0])
     // let tracking_numbers
-    // let params
-    // monitorDoTrack(tracking_numbers, params)
+    let _obj = {}
+    _obj[courier] = [{
+      row: range.rowStart,
+      isSelectedCourier: true,
+      number: tracking_num,
+    }]
+    
+    let params = {
+      spreadsheet: undefined,
+      sheet,
+      rows: [range.rowStart],
+      isMonitor: true,
+      tracking_numbers: tracking_numbers,
+      selected_grouped_by_couriers: _obj,
+      default_courier_trackings: [],
+    }
+    console.log(params)
+
+    doBatchTrackingForSheet_(params)
   }
 }
 

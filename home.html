@@ -173,6 +173,15 @@
       <!-- monitors -->
       <div v-if="page==='monitors'">
         <p>
+          <i class="fas fa-shipping-fast"></i>
+          After changing carrier, you need to update the tracking information.
+        </p>
+        <p>
+          <button v-if="!isSelectedUpdating" @click="updateSelectedRow" style="width: 100%" class="action"><i class="fas fa-mouse-pointer"></i>Update Selected Row</button>
+          <button v-if="isSelectedUpdating" style="width: 100%" class="action" disabled><i class="fas fa-spin fa-spinner"></i></button>
+        </p>
+        <hr>
+        <p>
           <i class="fas fa-info-circle"></i>
           Add the current spreadsheet to monitor, which will automatically update all the trackings information every <b class="error">1</b> hour.
         </p>
@@ -441,6 +450,7 @@
         delMoIsLoading: false, // 删除监听
         switchPlan: undefined, // 用户需要切换的订阅
         isSwitching: false, // 正在改变订阅
+        isSelectedUpdating: false, // 是否在更新某个单号 
       },
       created() {
         let _this = this
@@ -507,6 +517,19 @@
           }, function(err){
             _this.subIsLoading = false
             _this.isSwitching = false
+          })
+        },
+
+        updateSelectedRow () {
+          let _this = this
+          this.isSelectedUpdating = true
+          this.addToMoIsLoading = true
+          serverRun('updateSelectedRow', {}, function(result){
+            _this.isSelectedUpdating = false
+            _this.addToMoIsLoading = false
+          }, function(err){
+            _this.isSelectedUpdating = false
+            _this.addToMoIsLoading = false
           })
         },
 
