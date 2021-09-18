@@ -14,6 +14,8 @@ function onOpen(e) {
   if (e && e.authMode == ScriptApp.AuthMode.NONE) {
     // ui.createAddonMenu('SheetTrackr')
     ui.createMenu('SheetTrackr')
+      .addItem('🚚 Start', 'openSidebar')
+      .addSeparator()
       .addItem('❓ Tutorial Video', 'openTutorailVideo')
       .addToUi()
   }else{
