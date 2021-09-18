@@ -1,5 +1,5 @@
-// const ADDON_HOST = `https://sheettrackr.workaddons.com`
-const ADDON_HOST = `https://ef982672dcfc.ngrok.io`
+const ADDON_HOST = `https://sheettrackr.workaddons.com`
+// const ADDON_HOST = `https://ef982672dcfc.ngrok.io`
 // parse server
 // 参考：http://docs.parseplatform.org/rest/guide/#getting-started
 class Klass_ParseServer {
@@ -86,6 +86,7 @@ class Klass_ParseServer {
   }
 
   ajax (url, data, method, headers, command) {
+    let userProperties = Storage.user()
     headers = headers ? headers : this.headers
     method = method ? method : 'post'
     let user = userProperties.getProperty('user')

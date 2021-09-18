@@ -5,6 +5,7 @@ class Klass_Monitor {
   }
 
   init () {
+    let userProperties = Storage.user()
     let monitors = userProperties.getProperty('monitors')
     if(monitors) {
       this.monitors = JSON.parse(monitors)
@@ -15,6 +16,7 @@ class Klass_Monitor {
   }
 
   count () {
+    let userProperties = Storage.user()
     let monitors = userProperties.getProperty('monitors')
     console.log(monitors)
     if(!monitors){
@@ -30,8 +32,10 @@ class Klass_Monitor {
   }
 
   getAllMonitors () {
+    let userProperties = Storage.user()
     let monitors = userProperties.getProperty('monitors')
-    // console.log(monitors)
+    console.log('get All monitors')
+    console.log(monitors)
     if(!monitors){
       this.monitors = []
       return this.monitors
@@ -55,6 +59,7 @@ class Klass_Monitor {
   }
 
   createSheetMonitor (funcName) {
+    let userProperties = Storage.user()
     // let functionName = 'updateSheetTrackings'
     let sheetId = SpreadsheetApp.getActive().getId()
     let monitors = this.getAllMonitors()
@@ -78,12 +83,17 @@ class Klass_Monitor {
       sheetId,
     })
     userProperties.setProperty('monitors', JSON.stringify(monitors))
-    // console.log(monitors)
+    console.log(monitors)
+    let ss = userProperties.getProperty('monitors')
+    console.log('user properties')
+    console.log(ss)
+     console.log(Storage.user())
     this.monitors = monitors
     return monitors
   }
 
   removeSheetMonitor (sheetId) {
+    let userProperties = Storage.user()
     let monitors = this.getAllMonitors()
     let index = -1
     let triggerId = undefined

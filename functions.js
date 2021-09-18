@@ -13,14 +13,28 @@ function openSidebar() {
 /**
  * 打开帮助窗口
  */
-function openHelp() {
-  console.log('Open Help...!')
+function openTutorailVideo() {
   var filename = 'help'
   var output = HtmlService.createHtmlOutputFromFile(filename)
                           .setHeight(385)
                           .setWidth(560)
   var ui = SpreadsheetApp.getUi()
-  ui.showModalDialog(output, 'Help - SheetTrackr')
+  ui.showModalDialog(output, 'Tutorial Video - SheetTrackr')
+}
+
+function AddonInit () {
+  // userProperties = PropertiesService.getUserProperties()
+  let userProperties = Storage.user()
+  // 个人设置
+  if(!userProperties.getProperty('setting')){
+    userProperties.setProperty('setting', JSON.stringify(default_setting))
+  }
+  // 物流单号更新监听器
+  if(!userProperties.getProperty('monitors')) {
+    userProperties.setProperty('monitor', JSON.stringify(default_monitors))
+  }
+  User.init()
+  return true
 }
 /**
  * 查询订单
@@ -328,6 +342,7 @@ function insertDataValidationToSheet (sheet, row, column, list) {
 }
 
 function manageSubscrptoin () {
+  let userProperties = Storage.user()
   let exUser = userProperties.getProperty('exUser')
   exUser = JSON.parse(exUser)
   // console.log(exUser)
@@ -339,6 +354,7 @@ function manageSubscrptoin () {
 }
 
 function switchPlan (params) {
+  let userProperties = Storage.user()
   let plan = params && params.plan ? params.plan : 'professional'
   let exUser = userProperties.getProperty('exUser')
   exUser = JSON.parse(exUser)
@@ -383,6 +399,7 @@ function getAllSpreadsheets () {
 }
 
 function addSpreadsheetToMonitor () {
+  let userProperties = Storage.user()
   let exUser = userProperties.getProperty('exUser')
   exUser = JSON.parse(exUser)
   // console.log(exUser)
@@ -422,7 +439,7 @@ function removeSpreadsheetMonitor (sheetId) {
 }
 
 function updateSheetTrackings () {
-  // console.log('run monitor')
+  console.log('run monitor to update all sheets.')
   updateAllSpreadsheets()
 }
 
@@ -430,21 +447,45 @@ function updateSheetTrackings () {
  * 更新当前用户选择的订单
  */
 function updateSelectedRow () {
+  let userProperties = Storage.user()
   let me = User.me()
   let uid = me.objectId
-  let row = userProperties.getProperty('row_selected')
-  let column = 1
+  // let row = userProperties.getProperty('row_selected')
   let sheet = SpreadsheetApp.getActiveSheet()
+  let row = sheet.getSelection().getCurrentCell().getRow()
+  let column = 1
   let cell = SpreadsheetApp.getActiveSheet().getRange(row, column)
   let courier_cell = SpreadsheetApp.getActiveSheet().getRange(row, column + 1)
   let note = cell.getNote()
   let tNumber = cell.getValue() + ''
+  console.log(row, column)
   console.log(note, tNumber)
+  if(!note || !tNumber) {
+    showAlert({
+      title: 'SheetTrackr',
+      message: `Can't find a valid tracking number in current row(${row}).`
+    })
+    return
+  }
+  // if(node || node.indexOf('#') < 0) {
+  //   showAlert({
+  //     title: 'SheetTrackr',
+  //     message: `Can't find a valid tracking number in current row(${row}).`
+  //   })
+  //   return
+  // }
   let key = note.split('#')[1]
   let _text = decipher(APP_NAME)(key)
   let slat = _text.split('|')
   // 判断标记中的 key 是否真确，单号与用户id
   let isOK = tNumber === (slat[0] + '') && uid === slat[1]
+  if(!isOK) {
+    showAlert({
+      title: 'SheetTrackr',
+      message: `Can't find a valid tracking number in current row(${row}).`
+    })
+    return
+  }
   if(isOK) {
     // console.log('update information')
     let courier = String(courier_cell.getValue()).toLocaleLowerCase()
@@ -520,6 +561,7 @@ function updateOnCourierChange (e) {
  * 用户登出，删除所有登录信息
  */
 function logout () {
+  let userProperties = Storage.user()
   userProperties.deleteProperty('exUser')
   userProperties.deleteProperty('user')
   userProperties.deleteProperty('setting')

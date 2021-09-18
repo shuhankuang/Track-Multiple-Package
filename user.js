@@ -1,15 +1,28 @@
 // 用户
 class Klass_User {
   constructor () {
-    this.currentUserEmail = Session.getActiveUser().getEmail()
-    this.currentUserId = Session.getActiveUser().getUserLoginId()
+    // 
   }
 
   /**
    * 用户登录，默认是用当前的用户邮箱
    */
   signIn () {
+    // if(!userProperties) {
+    //   userProperties = PropertiesService.getUserProperties()
+    //   // 个人设置
+    //   if(!userProperties.getProperty('setting')){
+    //     userProperties.setProperty('setting', JSON.stringify(default_setting))
+    //   }
+    //   // 物流单号更新监听器
+    //   if(!userProperties.getProperty('monitors')) {
+    //     userProperties.setProperty('monitor', JSON.stringify(default_monitors))
+    //   }
+    // }
+    let userProperties = Storage.user()
     let user = userProperties.getProperty('user')
+    console.log('sign in')
+    console.log(user)
     if(user){
       let _me = JSON.parse(user)
       return _me
@@ -42,18 +55,20 @@ class Klass_User {
    * 获取当前的邮箱
    */
   me () {
+    let userProperties = Storage.user()
     let _me = userProperties.getProperty('user')
     return JSON.parse(_me)
   }
 
   email () {
-    return this.currentUserEmail
+    return Session.getActiveUser().getEmail()
   }
 
   /**
    * 用户登出
    */
   logout () {
+    let userProperties = Storage.user()
     userProperties.deleteProperty('user')
     userProperties.deleteProperty('exUser')
   }
@@ -62,6 +77,7 @@ class Klass_User {
    * 判断是否付费高级用户
    */
   refreshProStatus () {
+    let userProperties = Storage.user()
     let user = userProperties.getProperty('user')
     let uid = JSON.parse(user).objectId
     let result = ParseServer.runCloudCode('isPro', {
@@ -90,12 +106,15 @@ class Klass_User {
   }
 
   isPro () {
+    let userProperties = Storage.user()
     let result = userProperties.getProperty('exUser')
     let exUser = JSON.parse(result)
     return exUser.pro
   }
 
   init () {
+    this.currentUserEmail = Session.getActiveUser().getEmail()
+    this.currentUserId = Session.getActiveUser().getUserLoginId()
     this.signIn()
     this.refreshProStatus()
   }

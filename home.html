@@ -429,190 +429,190 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script>
 	function serverRun(func, params, onSuccess, onFailure) {
-      google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFailure)
-        [func](params);
-    }
-    var app = new Vue({
-      el: "#app",
-      data: {
-        isLoading: false,
-        page: 'home',
-        logs: '',
-        nums: '',
-        sheets: [],
-        me: undefined,
-        accept: false,
-        state: undefined,
-        subIsLoading: false, // 订阅管理
-        addToMoIsLoading: false, // 添加监听
-        delMoIsLoading: false, // 删除监听
-        switchPlan: undefined, // 用户需要切换的订阅
-        isSwitching: false, // 正在改变订阅
-        isSelectedUpdating: false, // 是否在更新某个单号 
+    google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(onFailure)
+      [func](params);
+  }
+  var app = new Vue({
+    el: "#app",
+    data: {
+      isLoading: false,
+      page: 'home',
+      logs: '',
+      nums: '',
+      sheets: [],
+      me: undefined,
+      accept: false,
+      state: undefined,
+      subIsLoading: false, // 订阅管理
+      addToMoIsLoading: false, // 添加监听
+      delMoIsLoading: false, // 删除监听
+      switchPlan: undefined, // 用户需要切换的订阅
+      isSwitching: false, // 正在改变订阅
+      isSelectedUpdating: false, // 是否在更新某个单号 
+    },
+    created() {
+      let _this = this
+      // let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
+      // let test = '9405511108400894874262'
+      // this.nums = test
+      this.updateUserInfo()
+      this.updateMonitors()
+    },
+    methods: {
+      gotoPage (page) {
+        this.page = page
       },
-      created() {
+
+      openURL (url) {
+        window.open(url)
+      },
+
+      logout () {
+        serverRun('logout', {}, function(result){
+          console.log('logout success!')
+        })
+      },
+
+      updateUserInfo () {
         let _this = this
-        let test = `9361289738009091755413 \nUA938472260US\n9374889675091115019951\nUM740335899US`
-        // let test = '9405511108400894874262'
-        this.nums = test
-        this.updateUserInfo()
-        this.updateMonitors()
+        // get current user info
+        serverRun('doGetMe', {}, function(result){
+          _this.me = result
+          _this.state = result.state
+          _this.switchPlan = _this.state.plan
+          console.log(result)
+          document.querySelector("#loader").style.visibility = "hidden";
+        }, function(){})
       },
-      methods: {
-        gotoPage (page) {
-          this.page = page
-        },
 
-        openURL (url) {
-          window.open(url)
-        },
+      updateMonitors () {
+        let _this = this
+        // get the speadsheet
+        serverRun('getAllSpreadsheets', {}, function(result){
+          console.log(result)
+          _this.sheets = result
+        })
+      },
 
-        logout () {
-          serverRun('logout', {}, function(result){
-            console.log('logout success!')
-          })
-        },
-
-        updateUserInfo () {
-          let _this = this
-          // get current user info
-          serverRun('doGetMe', {}, function(result){
-            _this.me = result
-            _this.state = result.state
-            _this.switchPlan = _this.state.plan
-            console.log(result)
-            document.querySelector("#loader").style.visibility = "hidden";
-          }, function(){})
-        },
-
-        updateMonitors () {
-          let _this = this
-          // get the speadsheet
-          serverRun('getAllSpreadsheets', {}, function(result){
-            console.log(result)
-            _this.sheets = result
-          })
-        },
-
-        gotoSubscribePage (plan) {
-          if(!this.accept) {
-            this.showAlert()
-            return
-          }
-          let url = this.me.subscribeURL + `&plan=${plan}`
-          window.open(url)
-        },
-
-        gotoSubscriptionManagePage () {
-          let _this = this
-          this.subIsLoading = true
-          this.isSwitching = true
-          serverRun('manageSubscrptoin', {}, function(result){
-            _this.subIsLoading = false
-            _this.isSwitching = false
-            let url = result.url
-            window.open(url)
-          }, function(err){
-            _this.subIsLoading = false
-            _this.isSwitching = false
-          })
-        },
-
-        updateSelectedRow () {
-          let _this = this
-          this.isSelectedUpdating = true
-          this.addToMoIsLoading = true
-          serverRun('updateSelectedRow', {}, function(result){
-            _this.isSelectedUpdating = false
-            _this.addToMoIsLoading = false
-          }, function(err){
-            _this.isSelectedUpdating = false
-            _this.addToMoIsLoading = false
-          })
-        },
-
-        addToMonitor () {
-          this.addToMoIsLoading = true
-          let _this = this
-          serverRun('addSpreadsheetToMonitor', {}, function(result){
-            // console.log(result)
-            _this.addToMoIsLoading = false
-            if(result){
-              _this.sheets = result
-            }
-          }, function(err){
-            _this.addToMoIsLoading = false
-          })
-        },
-
-        switchToPlan () {
-          let _this = this
-          let plan = this.switchPlan.toLocaleLowerCase()
-          console.log(plan)
-          this.subIsLoading = true
-          this.isSwitching = true
-          serverRun('switchPlan', {plan}, function(result){
-            _this.subIsLoading = false
-            _this.isSwitching = false
-            // _this.updateUserInfo()
-            // window.locatoin.reload()
-            // _this.updateMonitors()
-          }, function(err){
-            _this.subIsLoading = false
-            _this.isSwitching = false
-          })
-        },
-
-        removeSheetMonitor (sheetId) {
-          let _this = this
-          this.delMoIsLoading = true
-          serverRun('removeSpreadsheetMonitor', sheetId, function(result){
-            console.log(result)
-            _this.delMoIsLoading = false
-            _this.sheets = result
-          }, function(err){
-            _this.delMoIsLoading = false
-          })
-        },
-
-        showAlert () {
-          let data = {
-            title: 'SheetTrackr',
-            message: 'You need to accept the SheetTrackr Terms of Service.'
-          }
-          serverRun('showAlert', data, function(result) {
-
-          })
-        },
-
-        track (trackings) {
-          let _this = this
-          let arr = this.nums.split(String.fromCharCode(10))
-          let tks = []
-          for (let i = 0; i < arr.length; i++) {
-            let element = arr[i]
-            arr[i] = element.trim()
-            if(arr[i].length > 3) {
-              tks.push(arr[i])
-            }
-          }
-          this.isLoading = true
-          serverRun('doTrack', tks, function(result){
-            // console.log(result)
-            let filter_result = result
-            let state = filter_result.state
-            _this.state = state
-            _this.isLoading = false
-          }, function(err) {
-            // console.log(err)
-            // _this.logs = result
-            _this.isLoading = false
-          })
+      gotoSubscribePage (plan) {
+        if(!this.accept) {
+          this.showAlert()
+          return
         }
+        let url = this.me.subscribeURL + `&plan=${plan}`
+        window.open(url)
       },
-    });
+
+      gotoSubscriptionManagePage () {
+        let _this = this
+        this.subIsLoading = true
+        this.isSwitching = true
+        serverRun('manageSubscrptoin', {}, function(result){
+          _this.subIsLoading = false
+          _this.isSwitching = false
+          let url = result.url
+          window.open(url)
+        }, function(err){
+          _this.subIsLoading = false
+          _this.isSwitching = false
+        })
+      },
+
+      updateSelectedRow () {
+        let _this = this
+        this.isSelectedUpdating = true
+        this.addToMoIsLoading = true
+        serverRun('updateSelectedRow', {}, function(result){
+          _this.isSelectedUpdating = false
+          _this.addToMoIsLoading = false
+        }, function(err){
+          _this.isSelectedUpdating = false
+          _this.addToMoIsLoading = false
+        })
+      },
+
+      addToMonitor () {
+        this.addToMoIsLoading = true
+        let _this = this
+        serverRun('addSpreadsheetToMonitor', {}, function(result){
+          // console.log(result)
+          _this.addToMoIsLoading = false
+          if(result){
+            _this.sheets = result
+          }
+        }, function(err){
+          _this.addToMoIsLoading = false
+        })
+      },
+
+      switchToPlan () {
+        let _this = this
+        let plan = this.switchPlan.toLocaleLowerCase()
+        console.log(plan)
+        this.subIsLoading = true
+        this.isSwitching = true
+        serverRun('switchPlan', {plan}, function(result){
+          _this.subIsLoading = false
+          _this.isSwitching = false
+          // _this.updateUserInfo()
+          // window.locatoin.reload()
+          // _this.updateMonitors()
+        }, function(err){
+          _this.subIsLoading = false
+          _this.isSwitching = false
+        })
+      },
+
+      removeSheetMonitor (sheetId) {
+        let _this = this
+        this.delMoIsLoading = true
+        serverRun('removeSpreadsheetMonitor', sheetId, function(result){
+          console.log(result)
+          _this.delMoIsLoading = false
+          _this.sheets = result
+        }, function(err){
+          _this.delMoIsLoading = false
+        })
+      },
+
+      showAlert () {
+        let data = {
+          title: 'SheetTrackr',
+          message: 'You need to accept the SheetTrackr Terms of Service.'
+        }
+        serverRun('showAlert', data, function(result) {
+
+        })
+      },
+
+      track (trackings) {
+        let _this = this
+        let arr = this.nums.split(String.fromCharCode(10))
+        let tks = []
+        for (let i = 0; i < arr.length; i++) {
+          let element = arr[i]
+          arr[i] = element.trim()
+          if(arr[i].length > 3) {
+            tks.push(arr[i])
+          }
+        }
+        this.isLoading = true
+        serverRun('doTrack', tks, function(result){
+          // console.log(result)
+          let filter_result = result
+          let state = filter_result.state
+          _this.state = state
+          _this.isLoading = false
+        }, function(err) {
+          // console.log(err)
+          // _this.logs = result
+          _this.isLoading = false
+        })
+      }
+    },
+  });
 </script>
 
 </html>

@@ -10,11 +10,20 @@ function onInstall(e) {
 function onOpen(e) {
   // 创建菜单
   var ui = SpreadsheetApp.getUi()
-  ui.createMenu('SheetTrackr')
-    .addItem('🚚 Start', 'openSidebar')
-    .addSeparator()
-    .addItem('❓ Help', 'openHelp')
-    .addToUi()
+  console.log(e.authMode)
+  if (e && e.authMode == ScriptApp.AuthMode.NONE) {
+    // ui.createAddonMenu('SheetTrackr')
+    ui.createMenu('SheetTrackr')
+      .addItem('❓ Tutorial Video', 'openTutorailVideo')
+      .addToUi()
+  }else{
+    // ui.createAddonMenu('SheetTrackr')
+    ui.createMenu('SheetTrackr')
+      .addItem('🚚 Start', 'openSidebar')
+      .addSeparator()
+      .addItem('❓ Tutorial Video', 'openTutorailVideo')
+      .addToUi()
+  }
 }
 
 /**
@@ -22,8 +31,9 @@ function onOpen(e) {
  */
 function onSelectionChange (e) {
   let range = e.range
+  console.log(range)
   let rowSelected = range.rowStart + ''
-  userProperties.setProperty('row_selected', rowSelected)
+  Storage.user().setProperty('row_selected', rowSelected)
 }
 
 function onEdit (e) {

@@ -2,7 +2,6 @@ class Klass_Trigger {
   constructor () {
 
   }
-
   /**
    * 创建一个小时时间任务
    */

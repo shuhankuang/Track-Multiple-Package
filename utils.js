@@ -56,7 +56,7 @@ function showAlert (params) {
  */
 function doGetMe () {
   // let me = User.email()
-  // console.log(me)
+  let userProperties = Storage.user()
   let me = {}
   let user = userProperties.getProperty('user')
   let exUser = userProperties.getProperty('exUser')

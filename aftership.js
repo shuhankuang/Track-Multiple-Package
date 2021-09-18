@@ -28,7 +28,8 @@ function af_singleTracking (tracking_number, courier) {
   let opts = {
     method: 'post',
     contentType: 'application/json',
-    payload: JSON.stringify(formData)
+    payload: JSON.stringify(formData),
+    muteHttpExceptions: false
   }
   // console.log(opts)
   let response = UrlFetchApp.fetch(url, opts)
@@ -43,9 +44,12 @@ function af_singleTracking (tracking_number, courier) {
  * @param {Array} slugs 物流服务器商，有此参数表示单号独立
  */
 function af_batchTracking (tracking_numbers, slugs = []) {
+  tracking_numbers =  tracking_numbers ? tracking_numbers : ['9400111108435922211280']
   console.log(tracking_numbers)
-  tracking_numbers =  tracking_numbers ? tracking_numbers : ['9361289738009091755413', '9374889675091115019951']
+  // let _url = 'https://31d8-240e-3b1-82c1-6b0-5d9c-8f07-eca4-4461.ngrok.io'
   let url = `${AF_HOST_V2}/direct-trackings/batch`
+  // let url = `${_url}/direct-trackings/batch`
+  
   console.log(url)
   if(tracking_numbers.length < 1) {
     return false
@@ -62,6 +66,10 @@ function af_batchTracking (tracking_numbers, slugs = []) {
     slugs: slugs,
     direct_trackings,
   }
+  let result = ParseServer.runCloudCode('af_batchTracking', {formData})
+  console.log(result)
+  return result.result
+  return
   console.log(formData)
   let opts = {
     method: 'post',
@@ -69,11 +77,19 @@ function af_batchTracking (tracking_numbers, slugs = []) {
     headers: {
       'Content-Type': 'application/json',
     },
-    payload: JSON.stringify(formData)
+    payload: (formData),
+    muteHttpExceptions: false,
   }
-  // console.log(opts)
+  console.log(opts)
   // return
-  let response = UrlFetchApp.fetch(url, opts)
+  let response
+  try{
+    response = UrlFetchApp.fetch(url, opts)
+    console.log(response.getContentText())
+  }catch(err){
+    console.log(err)
+    return false
+  }
   let json = JSON.parse(response.getContentText())
   console.log(json)
   return json
